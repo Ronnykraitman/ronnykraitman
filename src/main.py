@@ -29,26 +29,26 @@ if "ronnyk_agent" not in st.session_state:
     st.session_state.ronnyk_agent = ronnyk_agent
 
 user_avatar_options = [
-    "src/media/avatar_1.png",
-    "src/media/avatar_2.png",
-    "src/media/avatar_3.png",
-    "src/media/avatar_4.png",
-    "src/media/avatar_5.png",
-    "src/media/avatar_6.png",
-    "src/media/avatar_7.png",
-    "src/media/avatar_8.png",
-    "src/media/avatar_9.png"
+    "/media/avatar_1.png",
+    "/media/avatar_2.png",
+    "/media/avatar_3.png",
+    "/media/avatar_4.png",
+    "/media/avatar_5.png",
+    "/media/avatar_6.png",
+    "/media/avatar_7.png",
+    "/media/avatar_8.png",
+    "/media/avatar_9.png"
 ]
 
 if "user_avatar" not in st.session_state:
     st.session_state.user_avatar = random.choice(user_avatar_options)
 
-set_custom_background("src/media/ronnyk_background.png")
+set_custom_background("/media/ronnyk_background.png")
 
 with open('style.css') as f:
     css = f.read()
 
-ronnyk_avatar = "src//media/ronnyk_avatar.jpg"
+ronnyk_avatar = "/media/ronnyk_avatar.jpg"
 
 st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
 

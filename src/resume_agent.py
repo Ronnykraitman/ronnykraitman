@@ -18,8 +18,8 @@ class RonnykAgent:
         self.history = []
 
     def create_resume_agent_instructions(self):
-        full_resume = get_full_resume("src/resume_files/my_resume.pdf")
-        resume_summary = get_resume_summary("src/resume_files/summary.txt")
+        full_resume = get_full_resume("/resume_files/my_resume.pdf")
+        resume_summary = get_resume_summary("/resume_files/summary.txt")
 
         instructions = f"You are acting as {self.name}. You are answering questions on {self.name}'s website, \
             particularly questions related to {self.name}'s career, background, skills and experience. \
