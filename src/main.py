@@ -45,7 +45,7 @@ if "user_avatar" not in st.session_state:
 
 set_custom_background("media/ronnyk_background.png")
 
-with open('style.css') as f:
+with open('../style.css') as f:
     css = f.read()
 
 ronnyk_avatar = "media/ronnyk_avatar.jpg"
