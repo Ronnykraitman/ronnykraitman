@@ -17,6 +17,6 @@ def open_pdf_in_new_tab():
     """Return a command telling the UI to open a PDF in a new browser tab if the user asked to see or download the resume / cv"""
     return {
         "action": "show_link",
-        "url": "/static/my_resume.pdf",
+        "url": "/public/my_resume.pdf",
         "text": "Check out my resume"
     }
