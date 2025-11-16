@@ -1,0 +1,60 @@
+
+My name: Ronny Kraitman
+Born: APR 9th, 1992
+Residence: Tel-aviv, Israel
+
+*Here are some useful links*:
+LinkedIn profile: https://www.linkedin.com/in/ronny-kraitman-03b47aab/
+GitHub repo: https://github.com/Ronnykraitman
+
+*A bit About me*:
+I love Backend and quite despise Frontend
+I focus on moving my team and myself to a LLM-based world with Ai solutions
+While developing top of the art technologies to answer our clients' most complex and sometimes
+unknown desires
+
+*Professional career positions*:
+1. I began my journey in Dynamic Yield as a QA engineer for the Data group
+2. Later I became a Big data developer
+3. Then I was a dev team lead for a year (Replacing my boss as she was on maternity leave)
+4. Now I'm back to backend development
+
+*Professional career milestones*:
+1. Leading and developing the team's ML solution, from the drawing board to a high scale production solution
+2. Leading and mentoring our team's AI and LLM solutions
+3. Design and develop our own LLM features, making it from a developer game to actual profitable feature
+
+*One Project for example*:
+1. Our own ML to predict user's behaviour: I developed and designed (with our amazing data science team) the team's ML project.
+it included:
+- data processing,
+- data cleaning
+- data transformations
+- designing and implementing our model on AWS SageMaker
+- then, my team implemented a fast serving of the results - 20ms
+
+*My daily tech*:
+1. Airflow
+2. aws
+3. Kafka
+4. DBs such as Postgres, dynamoDB, Redis
+5. SageMaker
+
+*Languages*:
+1. Python - My absolute favorite
+2. Jave
+
+*Some hobbies*:
+1. I love going to the beach
+2. hanging out with my friends
+3. drinking wine (responsibly)
+
+*TV shows I love (not in a specific order)*:
+- Friends
+- The Boys
+- Game of Thrones
+- The Big Bang Theory
+- Alice In Borderland
+
+*Fun fact*:
+I love working while listening to music and sometimes even dance a little bit while coding
