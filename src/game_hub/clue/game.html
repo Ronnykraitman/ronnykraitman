@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clue AI - Interactive Mystery</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Roboto:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a1a;
+            color: #e5e5e5;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .handwritten {
+            font-family: 'Special Elite', cursive;
+        }
+
+        /* Board Grid Layout */
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 1rem;
+            aspect-ratio: 1 / 1;
+            max-width: 600px;
+            margin: 0 auto;
+            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            background-color: #3e2723;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .room {
+            background-color: #d7ccc8;
+            color: #3e2723;
+            border: 2px solid #5d4037;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .room.highlight {
+            background-color: #81c784;
+            border-color: #2e7d32;
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 0 15px #4caf50;
+        }
+
+        .room.current-location {
+            border: 3px solid #ffeb3b;
+        }
+
+        .room-label {
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Player Tokens */
+        .token {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            position: absolute;
+            transition: all 0.5s ease-in-out;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Token colors */
+        .token-Miss-Scarlet { background-color: #e53935; }
+        .token-Colonel-Mustard { background-color: #fdd835; color: black; }
+        .token-Mrs-Peacock { background-color: #1e88e5; }
+        .token-Professor-Plum { background-color: #8e24aa; }
+        .token-Mr-Green { background-color: #43a047; }
+        .token-Mrs-White { background-color: #eeeeee; color: black; }
+
+        /* Card Styles */
+        .card {
+            background-color: #fff;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 0.5rem;
+            font-family: 'Special Elite', cursive;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* Logs */
+        .log-container {
+            font-family: 'Courier New', monospace;
+            height: 200px;
+            overflow-y: auto;
+            background-color: #000;
+            border: 1px solid #333;
+            padding: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .log-entry { margin-bottom: 4px; }
+        .log-entry.highlight { color: #ffd700; }
+        .log-entry.error { color: #ef5350; }
+        .log-entry.success { color: #66bb6a; }
+
+        /* Modal */
+        .modal {
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Secret Passages Lines (Simplified visually) */
+        .secret-passage {
+            font-size: 0.7rem;
+            color: #5d4037;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+
+<!-- Header -->
+<header class="bg-gray-900 p-4 shadow-md flex justify-between items-center z-20">
+    <div class="flex items-center gap-3">
+        <i class="fa-solid fa-magnifying-glass text-2xl text-yellow-500"></i>
+        <h1 class="text-2xl text-white tracking-wider">CLUE <span class="text-yellow-500">AI</span></h1>
+    </div>
+    <div class="text-sm text-gray-400 hidden md:block">
+        Use logic to find the Suspect, Weapon, and Room.
+    </div>
+</header>
+
+<!-- Main Game Area -->
+<main class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+
+    <!-- Left Panel: Opponents & Log -->
+    <div class="w-full md:w-1/4 bg-gray-800 p-4 flex flex-col gap-4 border-r border-gray-700 z-10">
+
+        <!-- AI Opponents -->
+        <div class="bg-gray-700 p-3 rounded-lg shadow-inner">
+            <h3 class="text-gray-300 mb-2 border-b border-gray-600 pb-1">Opponents</h3>
+            <div id="opponents-container" class="space-y-3">
+                <!-- Populated by JS -->
+                <div class="text-gray-500 text-sm italic">Waiting for game start...</div>
+            </div>
+        </div>
+
+        <!-- Game Log -->
+        <div class="flex-1 flex flex-col min-h-0">
+            <h3 class="text-gray-300 mb-2">Investigation Log</h3>
+            <div id="game-log" class="log-container rounded scrollbar-thin scrollbar-thumb-gray-600">
+                <!-- Logs go here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Center: The Board -->
+    <div class="flex-1 bg-gray-900 p-4 flex items-center justify-center relative overflow-y-auto">
+        <div id="board" class="board-grid">
+            <!-- Kitchen (0,0) -->
+            <div class="room" id="room-Kitchen" onclick="handleRoomClick('Kitchen')">
+                <span class="room-label">Kitchen</span>
+                <div class="secret-passage">(to Study)</div>
+                <div class="token-container absolute inset-0 flex items-center justify-center flex-wrap gap-1 p-1 pointer-events-none"></div>
+            </div>
+            <!-- Ballroom (0,1) -->
+            <div class="room" id="room-Ballroom" onclick="handleRoomClick('Ballroom')">
+                <span class="room-label">Ballroom</span>
+                <div class="token-container absolute inset-0 flex items-center justify-center flex-wrap gap-1 p-1 pointer-events-none"></div>
+            </div>
+            <!-- Conservatory (0,2) -->
+            <div class="room" id="room-Conservatory" onclick="handleRoomClick('Conservatory')">
+                <span class="room-label">Conservatory</span>
+                <div class="secret-passage">(to Lounge)</div>
+                <div class="token-container absolute inset-0 flex items-center justify-center flex-wrap gap-1 p-1 pointer-events-none"></div>
+            </div>
+            <!-- Dining Room (1,0) -->
+            <div class="room" id="room-Dining Room" onclick="handleRoomClick('Dining Room')">
+                <span class="room-label">Dining Room</span>
+                <div class="token-container absolute inset-0 flex items-center justify-center flex-wrap gap-1 p-1 pointer-events-none"></div>
+            </div>
+            <!-- Cellar (Center - 1,1) Not a playable room, usually logo -->
+            <div class="flex flex-col items-center justify-center bg-gray-800 rounded border-2 border-gray-700">
+                <div class="text-yellow-600 text-2xl font-bold font-serif opacity-30 tracking-widest">CLUE</div>
+            </div>
+            <!-- Billiard Room (1,2) -->
+            <div class="room" id="room-Billiard Room" onclick="handleRoomClick('Billiard Room')">
+                <span class="room-label">Billiard Room</span>
+                <div class="token-container absolute inset-0 flex items-center justify-center flex-wrap gap-1 p-1 pointer-events-none"></div>
+            </div>
+            <!-- Lounge (2,0) -->
+            <div class="room" id="room-Lounge" onclick="handleRoomClick('Lounge')">
+                <span class="room-label">Lounge</span>
+                <div class="secret-passage">(to Conservatory)</div>
+                <div class="token-container absolute inset-0 flex items-center justify-center flex-wrap gap-1 p-1 pointer-events-none"></div>
+            </div>
+            <!-- Hall (2,1) -->
+            <div class="room" id="room-Hall" onclick="handleRoomClick('Hall')">
+                <span class="room-label">Hall</span>
+                <div class="token-container absolute inset-0 flex items-center justify-center flex-wrap gap-1 p-1 pointer-events-none"></div>
+            </div>
+            <!-- Study (2,2) -->
+            <div class="room" id="room-Study" onclick="handleRoomClick('Study')">
+                <span class="room-label">Study</span>
+                <div class="secret-passage">(to Kitchen)</div>
+                <div class="token-container absolute inset-0 flex items-center justify-center flex-wrap gap-1 p-1 pointer-events-none"></div>
+            </div>
+        </div>
+
+        <!-- Dice Roll Overlay -->
+        <div id="dice-overlay" class="absolute top-4 right-4 bg-gray-800 p-2 rounded shadow border border-gray-600 hidden z-20">
+            <div class="text-center">
+                <div class="text-xs text-gray-400 mb-1">DICE ROLL</div>
+                <div id="dice-value" class="text-3xl font-bold text-yellow-400">?</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel: Player Controls -->
+    <div class="w-full md:w-1/4 bg-gray-800 p-4 border-l border-gray-700 flex flex-col gap-4 z-10">
+
+        <!-- Active Player Info -->
+        <div class="bg-gray-700 p-4 rounded-lg text-center">
+            <div class="text-xs text-gray-400 uppercase tracking-wide">Current Turn</div>
+            <div id="turn-indicator" class="text-xl font-bold text-white mt-1">Setup</div>
+        </div>
+
+        <!-- Actions Panel (Human) -->
+        <div id="action-panel" class="flex-1 flex flex-col gap-2 opacity-50 pointer-events-none transition-opacity">
+            <button id="btn-roll" onclick="humanRollDice()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded shadow transition-colors flex items-center justify-center gap-2">
+                <i class="fa-solid fa-dice"></i> Roll Dice
+            </button>
+
+            <div id="move-instruction" class="text-center text-sm text-yellow-300 hidden">
+                Select a highlighted room to move.
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mt-2">
+                <button id="btn-suggest" onclick="openSuggestionModal()" class="bg-purple-700 hover:bg-purple-600 text-white font-bold py-2 px-2 rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Suggest
+                </button>
+                <button id="btn-accuse" onclick="openAccusationModal()" class="bg-red-700 hover:bg-red-600 text-white font-bold py-2 px-2 rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Accuse
+                </button>
+            </div>
+            <button id="btn-pass" onclick="passTurn()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded mt-auto disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                Pass Turn
+            </button>
+        </div>
+    </div>
+
+</main>
+
+<!-- Bottom Bar: Hand & Notebook -->
+<footer class="bg-gray-900 border-t border-gray-700 p-4 z-20">
+    <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+
+        <!-- Player Avatar -->
+        <div class="flex items-center gap-3">
+            <div id="human-avatar" class="w-12 h-12 rounded-full border-2 border-white bg-gray-600 flex items-center justify-center text-xl font-bold">?</div>
+            <div>
+                <div id="human-name" class="font-bold text-white">Detective</div>
+                <div id="human-location" class="text-xs text-gray-400">Location: Lounge</div>
+            </div>
+        </div>
+
+        <!-- Hand -->
+        <div class="flex-1 flex justify-center gap-2 overflow-x-auto pb-1 max-w-2xl px-4">
+            <div class="text-xs text-gray-500 flex items-center mr-2">HAND:</div>
+            <div id="player-hand" class="flex gap-2">
+                <!-- Cards injected here -->
+            </div>
+        </div>
+
+        <!-- Notebook Toggle -->
+        <button onclick="toggleNotebook()" class="bg-yellow-700 hover:bg-yellow-600 text-white px-4 py-2 rounded flex items-center gap-2 text-sm">
+            <i class="fa-solid fa-book"></i> Notebook
+        </button>
+    </div>
+</footer>
+
+<!-- MODALS -->
+
+<!-- Character Selection Modal -->
+<div id="modal-char-select" class="modal fixed inset-0 flex items-center justify-center z-50">
+    <div class="bg-gray-800 rounded-lg shadow-2xl p-8 max-w-md w-full border border-gray-600">
+        <h2 class="text-2xl text-white mb-6 text-center">Choose Your Detective</h2>
+        <div id="char-list" class="grid grid-cols-2 gap-4">
+            <!-- Generated by JS -->
+        </div>
+    </div>
+</div>
+
+<!-- Notebook Modal -->
+<div id="modal-notebook" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="bg-gray-100 text-gray-900 rounded-lg shadow-2xl w-full max-w-lg h-3/4 flex flex-col overflow-hidden relative">
+        <div class="bg-yellow-800 text-white p-4 flex justify-between items-center">
+            <h2 class="text-xl font-bold handwritten">Detective's Notebook</h2>
+            <button onclick="toggleNotebook()" class="text-white hover:text-gray-300"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-6 overflow-y-auto flex-1 font-mono text-sm">
+            <div class="grid grid-cols-3 gap-4">
+                <div>
+                    <h4 class="font-bold border-b-2 border-black mb-2">Suspects</h4>
+                    <ul id="nb-suspects" class="space-y-1"></ul>
+                </div>
+                <div>
+                    <h4 class="font-bold border-b-2 border-black mb-2">Weapons</h4>
+                    <ul id="nb-weapons" class="space-y-1"></ul>
+                </div>
+                <div>
+                    <h4 class="font-bold border-b-2 border-black mb-2">Rooms</h4>
+                    <ul id="nb-rooms" class="space-y-1"></ul>
+                </div>
+            </div>
+            <div class="mt-6">
+                <h4 class="font-bold border-b-2 border-black mb-2">Evidence Log</h4>
+                <ul id="nb-evidence" class="list-disc pl-4 space-y-1 text-xs"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Suggestion Modal -->
+<div id="modal-suggestion" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="bg-white text-black rounded-lg p-6 max-w-sm w-full shadow-2xl">
+        <h3 class="text-xl font-bold mb-4">Make a Suggestion</h3>
+        <p class="text-sm text-gray-600 mb-4">Suggest a suspect and weapon in the <span id="suggest-room-display" class="font-bold">Room</span>.</p>
+
+        <label class="block text-sm font-bold mb-1">Suspect</label>
+        <select id="suggest-suspect" class="w-full border p-2 rounded mb-4"></select>
+
+        <label class="block text-sm font-bold mb-1">Weapon</label>
+        <select id="suggest-weapon" class="w-full border p-2 rounded mb-4"></select>
+
+        <div class="flex justify-end gap-2">
+            <button onclick="closeModals()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+            <button onclick="submitSuggestion()" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-500">Suggest</button>
+        </div>
+    </div>
+</div>
+
+<!-- Accusation Modal -->
+<div id="modal-accusation" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="bg-red-900 text-white rounded-lg p-6 max-w-sm w-full shadow-2xl border-2 border-red-500">
+        <h3 class="text-xl font-bold mb-2">Make an Accusation</h3>
+        <p class="text-xs text-red-200 mb-4 bg-red-800 p-2 rounded">WARNING: If you are wrong, you will be eliminated from the game!</p>
+
+        <label class="block text-sm font-bold mb-1">Room</label>
+        <select id="accuse-room" class="w-full bg-red-800 border border-red-600 p-2 rounded mb-3"></select>
+
+        <label class="block text-sm font-bold mb-1">Suspect</label>
+        <select id="accuse-suspect" class="w-full bg-red-800 border border-red-600 p-2 rounded mb-3"></select>
+
+        <label class="block text-sm font-bold mb-1">Weapon</label>
+        <select id="accuse-weapon" class="w-full bg-red-800 border border-red-600 p-2 rounded mb-4"></select>
+
+        <div class="flex justify-end gap-2">
+            <button onclick="closeModals()" class="px-4 py-2 text-red-200 hover:bg-red-800 rounded">Cancel</button>
+            <button onclick="submitAccusation()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500 shadow">ACCUSE!</button>
+        </div>
+    </div>
+</div>
+
+<!-- Show Card Modal (When user needs to show) -->
+<div id="modal-show-card" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="bg-white text-black rounded-lg p-6 max-w-md w-full text-center">
+        <h3 class="text-lg font-bold mb-2 text-purple-700">Refute Suggestion</h3>
+        <p class="mb-4 text-sm">You have evidence! Select a card to show silently to <span id="shower-target" class="font-bold"></span>.</p>
+        <div id="show-card-options" class="flex justify-center gap-3 flex-wrap">
+            <!-- Options buttons generated here -->
+        </div>
+    </div>
+</div>
+
+<!-- Message Modal (Alert replacement) -->
+<div id="modal-message" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+    <div class="bg-gray-800 text-white border border-gray-600 rounded-lg p-6 max-w-sm w-full text-center shadow-xl">
+        <h3 id="msg-title" class="text-xl font-bold mb-2 text-yellow-500">Notification</h3>
+        <p id="msg-body" class="mb-6 text-gray-300"></p>
+        <button onclick="closeMessageModal()" class="px-6 py-2 bg-blue-600 rounded hover:bg-blue-500">OK</button>
+    </div>
+</div>
+
+<!-- JS Logic -->
+<script>
+    // --- DATA & CONFIG ---
+    const SUSPECTS = ["Miss Scarlet", "Colonel Mustard", "Mrs. Peacock", "Professor Plum", "Mr. Green", "Mrs. White"];
+    const WEAPONS = ["Candlestick", "Dagger", "Lead Pipe", "Revolver", "Rope", "Wrench"];
+    const ROOMS = ["Kitchen", "Ballroom", "Conservatory", "Dining Room", "Lounge", "Hall", "Study", "Library", "Billiard Room"];
+
+    // Using the same graph logic from Python script
+    const CONNECTIONS = {
+        "Kitchen":      {"Ballroom": 6, "Dining Room": 6, "Study": 1},
+        "Ballroom":     {"Kitchen": 6, "Conservatory": 6, "Billiard Room": 6},
+        "Conservatory": {"Ballroom": 6, "Lounge": 1, "Library": 6},
+        "Dining Room":  {"Kitchen": 6, "Lounge": 6, "Hall": 6},
+        "Lounge":       {"Dining Room": 6, "Hall": 6, "Conservatory": 1},
+        "Hall":         {"Dining Room": 6, "Lounge": 6, "Study": 6},
+        "Study":        {"Hall": 6, "Library": 6, "Kitchen": 1},
+        "Library":      {"Study": 6, "Billiard Room": 6, "Conservatory": 6},
+        "Billiard Room":{"Library": 6, "Ballroom": 6, "Hall": 8}
+    };
+
+    const AVATAR_COLORS = {
+        "Miss Scarlet": "bg-red-600",
+        "Colonel Mustard": "bg-yellow-500 text-black",
+        "Mrs. Peacock": "bg-blue-600",
+        "Professor Plum": "bg-purple-600",
+        "Mr. Green": "bg-green-600",
+        "Mrs. White": "bg-gray-200 text-black"
+    };
+
+    // --- GAME STATE ---
+    let gameState = {
+        players: [], // {name, isAi, hand, loc, memory, eliminated}
+        truth: {},
+        turnIndex: 0,
+        humanPlayerName: null,
+        diceRoll: 0,
+        distances: {}, // Dijkstra map
+        gameOver: false,
+        logs: [],
+        waitingForUserShow: false
+    };
+
+    // --- INIT & UTILS ---
+
+    function init() {
+        renderCharSelection();
+        precomputeDistances();
+    }
+
+    function precomputeDistances() {
+        // Dijkstra for all pairs (simplified version of Python code)
+        gameState.distances = {};
+        ROOMS.forEach(start => {
+            let dists = {};
+            ROOMS.forEach(r => dists[r] = Infinity);
+            dists[start] = 0;
+            let queue = [[0, start]];
+
+            while(queue.length > 0) {
+                queue.sort((a,b) => a[0] - b[0]);
+                let [d, u] = queue.shift();
+
+                if (d > dists[u]) continue;
+
+                let neighbors = CONNECTIONS[u] || {};
+                for (let [v, weight] of Object.entries(neighbors)) {
+                    let newDist = d + weight;
+                    if (newDist < dists[v]) {
+                        dists[v] = newDist;
+                        queue.push([newDist, v]);
+                    }
+                }
+            }
+            gameState.distances[start] = dists;
+        });
+    }
+
+    function renderCharSelection() {
+        const container = document.getElementById('char-list');
+        container.innerHTML = '';
+        SUSPECTS.forEach(name => {
+            const btn = document.createElement('button');
+            btn.className = `p-4 rounded border border-gray-600 hover:scale-105 transition-transform flex items-center gap-2 ${AVATAR_COLORS[name] || 'bg-gray-700'}`;
+            // Simplified Initials
+            const initials = name.split(' ').map(n => n[0]).join('');
+            btn.innerHTML = `<span class="font-bold text-lg">${initials}</span> <span>${name}</span>`;
+            btn.onclick = () => startGame(name);
+            container.appendChild(btn);
+        });
+    }
+
+    function startGame(humanName) {
+        document.getElementById('modal-char-select').classList.add('hidden');
+        gameState.humanPlayerName = humanName;
+
+        // Setup Truth
+        const truth = {
+            Suspect: getRandom(SUSPECTS),
+            Weapon: getRandom(WEAPONS),
+            Room: getRandom(ROOMS)
+        };
+        gameState.truth = truth;
+        console.log("Truth (Hidden):", truth); // Debug
+
+        // Create Deck (Everything except truth)
+        let deck = [
+            ...SUSPECTS.filter(x => x !== truth.Suspect),
+            ...WEAPONS.filter(x => x !== truth.Weapon),
+            ...ROOMS.filter(x => x !== truth.Room)
+        ];
+        deck = shuffle(deck);
+
+        // Setup Players
+        gameState.players = [];
+
+        // 1. Human
+        gameState.players.push(createPlayer(humanName, false));
+
+        // 2. AI (Pick 3 others randomly)
+        let remainingSuspects = SUSPECTS.filter(s => s !== humanName);
+        let aiNames = shuffle(remainingSuspects).slice(0, 3);
+
+        aiNames.forEach(name => {
+            gameState.players.push(createPlayer(name, true));
+        });
+
+        // 3. Deal Cards (4 each as per rules)
+        // Note: Deck might have leftovers, which are ignored (Hidden)
+        for (let i = 0; i < 4; i++) {
+            gameState.players.forEach(p => {
+                if (deck.length > 0) {
+                    const card = deck.pop();
+                    p.hand.push(card);
+                    p.memory[card] = "Self"; // Mark own cards as known
+                }
+            });
+        }
+
+        // UI Init
+        setupUI();
+        log("Game Started. The truth is hidden in the envelope.");
+        updateBoard();
+
+        // Start Loop
+        setTimeout(gameLoop, 1000);
+    }
+
+    function createPlayer(name, isAi) {
+        return {
+            name: name,
+            isAi: isAi,
+            hand: [],
+            loc: "Lounge", // Everyone starts at Lounge
+            eliminated: false,
+            memory: {}, // Known cards {CardName: "Source"}
+            lastAction: ""
+        };
+    }
+
+    function setupUI() {
+        // Opponents List
+        const oppContainer = document.getElementById('opponents-container');
+        oppContainer.innerHTML = '';
+        gameState.players.forEach(p => {
+            if (p.isAi) {
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-2 text-sm bg-gray-800 p-2 rounded";
+                div.innerHTML = `
+                    <div class="w-6 h-6 rounded-full ${AVATAR_COLORS[p.name]} flex items-center justify-center text-xs font-bold border border-white">
+                        ${p.name.charAt(0)}
+                    </div>
+                    <span class="text-gray-300">${p.name}</span>
+                    <span class="text-xs text-gray-500 ml-auto" id="status-${p.name.replace(/\s/g,'')}">Waiting</span>
+                `;
+                oppContainer.appendChild(div);
+            }
+        });
+
+        // Human UI
+        const human = gameState.players.find(p => !p.isAi);
+        document.getElementById('human-name').textContent = human.name;
+        const avatar = document.getElementById('human-avatar');
+        avatar.className = `w-12 h-12 rounded-full border-2 border-white flex items-center justify-center text-xl font-bold ${AVATAR_COLORS[human.name]}`;
+        avatar.innerText = human.name.charAt(0);
+
+        // Hand
+        const handContainer = document.getElementById('player-hand');
+        handContainer.innerHTML = '';
+        human.hand.forEach(card => {
+            const cDiv = document.createElement('div');
+            cDiv.className = "card";
+            cDiv.innerText = card;
+            handContainer.appendChild(cDiv);
+        });
+
+        // Notebook setup
+        renderNotebook();
+
+        // Dropdowns
+        populateDropdowns();
+    }
+
+    function populateDropdowns() {
+        // Suggestion
+        const ss = document.getElementById('suggest-suspect');
+        const sw = document.getElementById('suggest-weapon');
+        // Accusation
+        const ar = document.getElementById('accuse-room');
+        const as = document.getElementById('accuse-suspect');
+        const aw = document.getElementById('accuse-weapon');
+
+        const fill = (el, arr) => {
+            el.innerHTML = '';
+            arr.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item;
+                opt.innerText = item;
+                el.appendChild(opt);
+            });
+        };
+
+        fill(ss, SUSPECTS);
+        fill(sw, WEAPONS);
+        fill(ar, ROOMS);
+        fill(as, SUSPECTS);
+        fill(aw, WEAPONS);
+    }
+
+    function renderNotebook() {
+        const human = gameState.players.find(p => !p.isAi);
+        const m = human.memory;
+
+        const updateList = (id, list) => {
+            const el = document.getElementById(id);
+            el.innerHTML = '';
+            list.forEach(item => {
+                const isKnown = m[item] !== undefined;
+                const li = document.createElement('li');
+                li.className = isKnown ? "text-gray-400 line-through decoration-red-500" : "";
+                li.innerHTML = `<span class="inline-block w-4">${isKnown ? 'X' : ''}</span> ${item}`;
+                el.appendChild(li);
+            });
+        };
+
+        updateList('nb-suspects', SUSPECTS);
+        updateList('nb-weapons', WEAPONS);
+        updateList('nb-rooms', ROOMS);
+
+        // Evidence Log
+        const evLog = document.getElementById('nb-evidence');
+        evLog.innerHTML = '';
+        Object.entries(m).forEach(([card, source]) => {
+            const li = document.createElement('li');
+            li.innerText = `${card} (from ${source})`;
+            evLog.appendChild(li);
+        });
+    }
+
+    // --- GAME LOOP ---
+
+    async function gameLoop() {
+        if (gameState.gameOver) return;
+
+        const currentPlayer = gameState.players[gameState.turnIndex];
+
+        // Skip eliminated players
+        if (currentPlayer.eliminated) {
+            log(`${currentPlayer.name} is eliminated and skips turn.`);
+            nextTurn();
+            return;
+        }
+
+        document.getElementById('turn-indicator').innerText = `${currentPlayer.name}'s Turn`;
+        updateStatus(currentPlayer.name, "Thinking...");
+
+        if (currentPlayer.isAi) {
+            setControlsActive(false);
+            await performAiTurn(currentPlayer);
+        } else {
+            log(`>> It's your turn, ${currentPlayer.name}.`);
+            updateStatus(currentPlayer.name, "Active");
+            setControlsActive(true);
+            // Enable Roll button, disable others
+            document.getElementById('btn-roll').disabled = false;
+            document.getElementById('btn-suggest').disabled = true;
+            document.getElementById('btn-accuse').disabled = true;
+            document.getElementById('btn-pass').disabled = true;
+            document.getElementById('move-instruction').classList.add('hidden');
+        }
+    }
+
+    function nextTurn() {
+        gameState.turnIndex = (gameState.turnIndex + 1) % gameState.players.length;
+        // Clear board highlights
+        document.querySelectorAll('.room').forEach(r => r.classList.remove('highlight'));
+        setTimeout(gameLoop, 1000);
+    }
+
+    function updateBoard() {
+        // Clear tokens
+        document.querySelectorAll('.token-container').forEach(el => el.innerHTML = '');
+
+        // Place tokens
+        gameState.players.forEach(p => {
+            if (p.eliminated) return;
+            const rEl = document.getElementById(`room-${p.loc}`);
+            if (rEl) {
+                const container = rEl.querySelector('.token-container');
+                const t = document.createElement('div');
+                t.className = `token ${AVATAR_COLORS[p.name]}`;
+                t.innerText = p.name.split(' ').map(n=>n[0]).join(''); // Initials
+                t.title = p.name;
+                container.appendChild(t);
+            }
+        });
+
+        // Update Human HUD Location
+        const human = gameState.players.find(p => !p.isAi);
+        document.getElementById('human-location').innerText = `Location: ${human.loc}`;
+    }
+
+    // --- HUMAN ACTIONS ---
+
+    function setControlsActive(active) {
+        const panel = document.getElementById('action-panel');
+        if (active) {
+            panel.classList.remove('opacity-50', 'pointer-events-none');
+        } else {
+            panel.classList.add('opacity-50', 'pointer-events-none');
+        }
+    }
+
+    function humanRollDice() {
+        const d1 = Math.floor(Math.random() * 6) + 1;
+        const d2 = Math.floor(Math.random() * 6) + 1;
+        gameState.diceRoll = d1 + d2;
+
+        // Show Dice
+        const overlay = document.getElementById('dice-overlay');
+        const valEl = document.getElementById('dice-value');
+        valEl.innerText = gameState.diceRoll;
+        overlay.classList.remove('hidden');
+        setTimeout(() => overlay.classList.add('hidden'), 3000);
+
+        log(`You rolled a ${gameState.diceRoll}.`);
+        document.getElementById('btn-roll').disabled = true;
+
+        // Calculate Moves
+        const p = getCurrentPlayer();
+        const moves = getReachableRooms(p.loc, gameState.diceRoll);
+
+        if (moves.length === 0) {
+            log("No rooms reachable. You are stuck.");
+            enableActionPhase(); // Skip move, go to actions (can pass)
+        } else {
+            log("Select a highlighted room to move.");
+            document.getElementById('move-instruction').classList.remove('hidden');
+            moves.forEach(roomName => {
+                const el = document.getElementById(`room-${roomName}`);
+                if (el) el.classList.add('highlight');
+            });
+        }
+    }
+
+    function handleRoomClick(roomName) {
+        const p = getCurrentPlayer();
+        // Only allow move if it's human turn and room is highlighted
+        if (!p.isAi && document.getElementById(`room-${roomName}`).classList.contains('highlight')) {
+            movePlayer(p, roomName);
+            document.querySelectorAll('.room').forEach(r => r.classList.remove('highlight'));
+            document.getElementById('move-instruction').classList.add('hidden');
+            enableActionPhase();
+        }
+    }
+
+    function enableActionPhase() {
+        document.getElementById('btn-suggest').disabled = false;
+        document.getElementById('btn-accuse').disabled = false;
+        document.getElementById('btn-pass').disabled = false;
+    }
+
+    function passTurn() {
+        log("You passed your turn.");
+        setControlsActive(false);
+        nextTurn();
+    }
+
+    // --- MODALS ---
+    function openSuggestionModal() {
+        const p = getCurrentPlayer();
+        document.getElementById('suggest-room-display').innerText = p.loc;
+        document.getElementById('modal-suggestion').classList.remove('hidden');
+    }
+
+    function openAccusationModal() {
+        document.getElementById('modal-accusation').classList.remove('hidden');
+    }
+
+    function closeModals() {
+        document.querySelectorAll('.modal').forEach(m => {
+            if(m.id !== 'modal-char-select' && m.id !== 'modal-show-card' && m.id !== 'modal-message') {
+                m.classList.add('hidden');
+            }
+        });
+    }
+
+    function toggleNotebook() {
+        const nb = document.getElementById('modal-notebook');
+        if (nb.classList.contains('hidden')) {
+            renderNotebook();
+            nb.classList.remove('hidden');
+        } else {
+            nb.classList.add('hidden');
+        }
+    }
+
+    function showMessage(title, body) {
+        document.getElementById('msg-title').innerText = title;
+        document.getElementById('msg-body').innerText = body;
+        document.getElementById('modal-message').classList.remove('hidden');
+    }
+
+    function closeMessageModal() {
+        document.getElementById('modal-message').classList.add('hidden');
+    }
+
+    // --- ACTION LOGIC ---
+
+    function submitSuggestion() {
+        const s = document.getElementById('suggest-suspect').value;
+        const w = document.getElementById('suggest-weapon').value;
+        const p = getCurrentPlayer();
+        const r = p.loc;
+
+        closeModals();
+        handleSuggestionLogic(p, s, w, r);
+
+        // Human turn ends after suggestion logic (async handle)
+    }
+
+    function submitAccusation() {
+        const r = document.getElementById('accuse-room').value;
+        const s = document.getElementById('accuse-suspect').value;
+        const w = document.getElementById('accuse-weapon').value;
+        const p = getCurrentPlayer();
+
+        closeModals();
+        handleAccusationLogic(p, s, w, r);
+    }
+
+    async function handleSuggestionLogic(suggester, s, w, r) {
+        log(`${suggester.name} suggests: ${s}, ${w}, in ${r}.`);
+        updateStatus(suggester.name, "Suggesting...");
+
+        // Move suspect to room
+        const suspectObj = gameState.players.find(pl => pl.name === s);
+        if (suspectObj) {
+            suspectObj.loc = r;
+            updateBoard();
+            log(`${s} was moved to ${r}.`);
+        }
+
+        // Check Refutations
+        let refutationFound = false;
+        const startIdx = gameState.players.indexOf(suggester);
+
+        for (let i = 1; i < gameState.players.length; i++) {
+            const checkIdx = (startIdx + i) % gameState.players.length;
+            const checker = gameState.players[checkIdx];
+            if (checker.eliminated) continue;
+
+            // Check hand
+            const matches = checker.hand.filter(c => c === s || c === w || c === r);
+
+            if (matches.length > 0) {
+                refutationFound = true;
+                log(`${checker.name} has evidence!`);
+                await new Promise(r => setTimeout(r, 1000)); // Pause for suspense
+
+                let shownCard = null;
+
+                if (checker.isAi) {
+                    // AI Shows random match
+                    shownCard = matches[Math.floor(Math.random() * matches.length)];
+                    if (!suggester.isAi) {
+                        showMessage("Evidence Revealed", `${checker.name} whispers and shows you: ${shownCard}`);
+                        suggester.memory[shownCard] = checker.name;
+                        renderNotebook(); // update human notebook
+                    } else {
+                        log(`${checker.name} shows a card secretly to ${suggester.name}.`);
+                        suggester.memory[shownCard] = checker.name;
+                    }
+                } else {
+                    // Human needs to pick a card to show
+                    if (suggester.isAi) {
+                        shownCard = await promptHumanToShowCard(matches, suggester.name);
+                        log(`You showed ${shownCard} to ${suggester.name}.`);
+                        suggester.memory[shownCard] = checker.name; // AI remembers
+                    }
+                }
+                break; // Stop after first refutation
+            } else {
+                log(`${checker.name} cannot refute.`);
+                await new Promise(r => setTimeout(r, 500));
+            }
+        }
+
+        if (!refutationFound) {
+            log("No one could refute the suggestion!");
+        }
+
+        // End turn logic
+        if (suggester.isAi) {
+            // Short delay then end turn
+            await new Promise(r => setTimeout(r, 1500));
+            nextTurn();
+        } else {
+            // Disable suggest button, force pass or accuse
+            document.getElementById('btn-suggest').disabled = true;
+            log("Turn ending. Pass or Accuse.");
+        }
+    }
+
+    function handleAccusationLogic(accuser, s, w, r) {
+        log(`!!! ${accuser.name} ACCUSES: ${s}, ${w}, ${r} !!!`);
+
+        const t = gameState.truth;
+        const correct = (s === t.Suspect && w === t.Weapon && r === t.Room);
+
+        if (correct) {
+            gameState.gameOver = true;
+            gameState.winner = accuser.name;
+            showMessage("GAME OVER", `CORRECT! ${accuser.name} solved the case!\nTruth: ${s}, ${w}, ${r}`);
+            log(`WINNER: ${accuser.name}`);
+        } else {
+            log(`WRONG! ${accuser.name} is eliminated.`);
+            accuser.eliminated = true;
+            updateBoard(); // Remove token maybe? Or change color. Keeping token for now.
+            if (!accuser.isAi) {
+                showMessage("ELIMINATED", "Your accusation was wrong. You can no longer play, but must show cards if asked.");
+                setControlsActive(false);
+                nextTurn();
+            } else {
+                nextTurn();
+            }
+        }
+    }
+
+    function promptHumanToShowCard(matches, toWhom) {
+        return new Promise(resolve => {
+            const modal = document.getElementById('modal-show-card');
+            const container = document.getElementById('show-card-options');
+            document.getElementById('shower-target').innerText = toWhom;
+            container.innerHTML = '';
+
+            matches.forEach(card => {
+                const btn = document.createElement('button');
+                btn.className = "bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500 font-bold border border-white";
+                btn.innerText = card;
+                btn.onclick = () => {
+                    modal.classList.add('hidden');
+                    resolve(card);
+                };
+                container.appendChild(btn);
+            });
+
+            modal.classList.remove('hidden');
+        });
+    }
+
+    // --- AI LOGIC (Simulating CrewAI) ---
+
+    async function performAiTurn(ai) {
+        await new Promise(r => setTimeout(r, 1000)); // Think time
+
+        // 1. Roll Dice
+        const roll = Math.floor(Math.random() * 6) + Math.floor(Math.random() * 6) + 2;
+        log(`${ai.name} rolled a ${roll}.`);
+
+        // 2. Decide Move
+        // Heuristic: Move to a room that isn't in memory if possible, otherwise random reachable
+        const reachable = getReachableRooms(ai.loc, roll);
+
+        if (reachable.length > 0) {
+            // Filter rooms not in memory (cards known)
+            const unknownRooms = reachable.filter(r => !ai.memory[r]);
+            let dest = "";
+            if (unknownRooms.length > 0) {
+                dest = getRandom(unknownRooms);
+            } else {
+                dest = getRandom(reachable);
+            }
+
+            movePlayer(ai, dest);
+            log(`${ai.name} moved to ${dest}.`);
+            await new Promise(r => setTimeout(r, 1000));
+        } else {
+            log(`${ai.name} stays in ${ai.loc}.`);
+        }
+
+        // 3. Suggestion Phase
+        // AI builds hypothesis from unknowns
+        const getUnknown = (arr) => {
+            const unknowns = arr.filter(item => !ai.memory[item]);
+            return unknowns.length > 0 ? getRandom(unknowns) : getRandom(arr);
+        };
+
+        const sSuspect = getUnknown(SUSPECTS);
+        const sWeapon = getUnknown(WEAPONS);
+        const sRoom = ai.loc; // Must suggest current room
+
+        // 4. Accusation Check
+        // If AI knows almost everything, accuse.
+        // Simplified: If only 1 Unknown Suspect, 1 Unknown Weapon, 1 Unknown Room left in entire world -> Accuse
+        // For this simulation, we'll stick to suggesting to gather info unless memory is very full.
+        // (Implementing robust "Winning" AI is complex, standard suggestion loop is fine for UI demo)
+
+        await handleSuggestionLogic(ai, sSuspect, sWeapon, sRoom);
+    }
+
+    // --- CORE HELPERS ---
+
+    function getCurrentPlayer() {
+        return gameState.players[gameState.turnIndex];
+    }
+
+    function movePlayer(player, dest) {
+        player.loc = dest;
+        updateBoard();
+    }
+
+    function getReachableRooms(currentRoom, roll) {
+        const dists = gameState.distances[currentRoom];
+        return ROOMS.filter(r => r !== currentRoom && dists[r] <= roll);
+    }
+
+    function log(msg) {
+        const el = document.getElementById('game-log');
+        const entry = document.createElement('div');
+        entry.className = "log-entry";
+        if (msg.includes("evidence")) entry.classList.add("highlight");
+        if (msg.includes("ACCUSES")) entry.classList.add("error");
+        if (msg.includes("WINNER")) entry.classList.add("success");
+
+        // Timestamp
+        const time = new Date().toLocaleTimeString([], {hour12: false, hour: "2-digit", minute:"2-digit", second:"2-digit"});
+        entry.innerText = `[${time}] ${msg}`;
+
+        el.appendChild(entry);
+        el.scrollTop = el.scrollHeight;
+    }
+
+    function updateStatus(playerName, status) {
+        const id = `status-${playerName.replace(/\s/g,'')}`;
+        const el = document.getElementById(id);
+        if(el) el.innerText = status;
+    }
+
+    function getRandom(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function shuffle(array) {
+        let currentIndex = array.length,  randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    // Boot
+    window.onload = init;
+
+</script>
+</body>
+</html>

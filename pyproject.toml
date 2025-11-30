@@ -21,7 +21,8 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "requests>=2.32.3",
     "semantic-kernel>=1.25.0",
-    "streamlit"
+    "streamlit",
+    "crewai==1.5.0"
 ]
 
 [dependency-groups]
