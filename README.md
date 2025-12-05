@@ -28,16 +28,6 @@ The agent is designed to be helpful, professional, and maybe a little bit whimsi
 
 ---
 
-## 🚀 What's Inside?
-
-### [Flight Tracker](src/pages/02_flight_tracker.py) ✈️
-A handy tool to track flights! (More details coming soon)
-
-### [Game Hub](src/game_hub/) 🎮
-A collection of interactive games. Who said developers can't have fun?
-
----
-
 ## 🛠️ Tech Stack
 
 This project is built using:
