@@ -4,7 +4,7 @@
 
 ![Welcome Banner](media/readme_header.png)
 
-# Welcome to Ronny's Digital Brain! 🧠✨
+# Welcome to Ronny's Digital Space! 🧠✨
 
 Hi! I'm **Ronny**, a **Senior Backend Developer** who loves building cool things with Python and AI.
 
