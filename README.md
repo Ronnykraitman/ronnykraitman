@@ -1,4 +1,7 @@
 
+
+> _"Any sufficiently advanced technology is indistinguishable from magic."_ - Arthur C. Clarke
+
 ![Welcome Banner](media/readme_header.png)
 
 # Welcome to Ronny's Digital Brain! 🧠✨
@@ -70,7 +73,3 @@ Want to run this locally?
 - **GitHub**: [Ronnykraitman](https://github.com/Ronnykraitman)
 - **LinkedIn**: (Add link)
 - **Email**: (Add email)
-
----
-
-> _"Any sufficiently advanced technology is indistinguishable from magic."_ - Arthur C. Clarke
