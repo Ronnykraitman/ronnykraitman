@@ -22,7 +22,8 @@ dependencies = [
     "requests>=2.32.3",
     "semantic-kernel>=1.25.0",
     "streamlit",
-    "crewai==1.5.0"
+    "crewai==1.5.0",
+    "flask"=="2.3.3",
 ]
 
 [dependency-groups]
