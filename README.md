@@ -68,6 +68,13 @@ Want to run this locally?
 
 ---
 
+## 🚀 Are you game?
+
+### [Clue](www.ronnykraitman.com/clue) 🎮
+Play the classic game of Clue. It's you agains the AI
+
+---
+
 ## 📫 Connect With Me
 
 - **GitHub**: [Ronnykraitman](https://github.com/Ronnykraitman)
