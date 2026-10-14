@@ -34,9 +34,11 @@ The agent is designed to be helpful, professional, and maybe a little bit whimsi
 ## 🛠️ Tech Stack
 
 This project is built using:
-- **[Streamlit](https://streamlit.io/)**: For the interactive web interface.
-- **[LangChain](https://www.langchain.com/)** & **[OpenAI](https://openai.com/)**: Powering the intelligent agents.
-- **Python 3.12**: The engine under the hood.
+- **Fast Async Backend**: Starlette + SSE (Server-Sent Events) for real-time streaming tokens.
+- **Intelligent Agent Engine**: OpenAI Agents SDK powered by Gemini via the OpenAI compatibility API.
+- **Slick High-Tech UI**: Modern glassmorphism interface, interactive canvas circuitry over custom artwork, live telemetry, and instant PDF resume download.
+- **Python 3.12**: Under the hood.
+- **[Streamlit](https://streamlit.io/)**: Classic dashboard interface alternative.
 
 ---
 
@@ -54,17 +56,20 @@ Want to run this locally?
    Make sure you have [poetry](https://python-poetry.org/) or pip installed.
    ```bash
    pip install -e .
-   # OR using the provided venv if you prefer
+   # OR using the provided venv
    source .venv/bin/activate
    ```
 
-3. **Run the App**
+3. **Run the High-Tech Chat App (Recommended)**
+   ```bash
+   uvicorn --app-dir src server:app --host 0.0.0.0 --port 8000 --reload
+   ```
+   Open `http://localhost:8000` in your browser.
+
+   _Or run the classic Streamlit interface:_
    ```bash
    streamlit run src/main.py
    ```
-
-4. **Open in Browser**
-   The app usually opens automatically at `http://localhost:8501`.
 
 ---
 

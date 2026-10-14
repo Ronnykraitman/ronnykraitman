@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Ronny Kraitman · Senior AI & Backend Engineer</title>
+  <meta name="description" content="Chat with Ronny Kraitman's AI agent — Senior AI & Backend Engineer. Ask about LLM systems, data pipelines, ML in production, and more.">
+  <meta name="theme-color" content="#06101f">
+  <link rel="icon" href="/media/ronnyk_avatar.jpg">
+
+  <link rel="preload" as="image" href="/media/ronnyk_background.png" fetchpriority="high">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github-dark-dimmed.min.css">
+  <link rel="stylesheet" href="/static/styles.css">
+
+  <script defer src="https://cdn.jsdelivr.net/npm/marked@14.1.2/marked.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/lib/highlight.min.js"></script>
+  <script defer src="/static/app.js"></script>
+</head>
+<body>
+  <!-- Background: the original artwork + high-tech overlays -->
+  <div class="bg" aria-hidden="true">
+    <div class="bg__image"></div>
+    <canvas class="bg__circuit" id="circuit"></canvas>
+    <div class="bg__grid"></div>
+    <div class="bg__shade"></div>
+    <div class="bg__scan"></div>
+  </div>
+
+  <div class="shell">
+    <!-- ───────────── Hero (left) ───────────── -->
+    <header class="hero">
+      <div class="brand reveal" style="--d:0">
+        <span class="brand__mark">RK</span>
+        <span class="brand__url">ronnykraitman<span class="dim">.com</span></span>
+      </div>
+
+      <div class="hero__body">
+        <h1 class="hero__name reveal" style="--d:2">Ronny Kraitman</h1>
+        <p class="hero__role reveal" style="--d:3">
+          <span class="prompt-sign">~$</span>
+          <span id="typed" class="typed">Senior AI &amp; Backend Engineer</span><span class="caret" aria-hidden="true"></span>
+        </p>
+
+        <div class="hero__actions reveal" style="--d:4">
+          <a class="btn-resume" href="/resume" download="Ronny_Kraitman_Resume.pdf">
+            <span class="btn-resume__glow" aria-hidden="true"></span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg>
+            <span>Download Resume</span>
+            <span class="btn-resume__meta">PDF</span>
+          </a>
+          <a class="btn-icon" href="https://www.linkedin.com/in/ronny-kraitman-03b47aab/" target="_blank" rel="noopener" aria-label="LinkedIn">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4V21H3V9.75Zm7 0h3.8v1.6h.06c.53-1 1.84-2.06 3.79-2.06 4.05 0 4.8 2.67 4.8 6.13V21h-4v-4.99c0-1.19-.02-2.72-1.66-2.72-1.66 0-1.92 1.3-1.92 2.63V21h-4V9.75Z"/></svg>
+          </a>
+          <a class="btn-icon" href="https://github.com/Ronnykraitman" target="_blank" rel="noopener" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.56 9.56 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <p class="hero__foot reveal" style="--d:5">Tel Aviv · Python &gt; everything · built with Gemini + OpenAI Agents SDK</p>
+    </header>
+
+    <!-- ───────────── Chat console (right) ───────────── -->
+    <main class="console reveal" style="--d:3" aria-label="Chat with Ronny's AI agent">
+      <div class="console__border" aria-hidden="true"></div>
+
+      <div class="console__bar">
+        <div class="agent">
+          <span class="agent__avatar"><img src="/media/ronnyk_avatar.jpg" alt="" width="40" height="40"></span>
+          <div>
+            <div class="agent__name">ronny<span class="accent">.ai</span></div>
+            <div class="agent__status"><span class="pulse-dot"></span><span id="modelLabel">agent online</span></div>
+          </div>
+        </div>
+        <div class="console__tools">
+          <a class="chip-btn chip-btn--resume" href="/resume" download="Ronny_Kraitman_Resume.pdf" aria-label="Download resume">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg>
+            <span>Resume</span>
+          </a>
+          <button class="chip-btn" id="resetBtn" type="button" title="New session" aria-label="Start a new session">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="console__telemetry" aria-hidden="true">
+        <span>session <b id="sessionId">----</b></span>
+        <span>ctx <b>resume.pdf + summary</b></span>
+        <span>stream <b>SSE</b></span>
+        <span class="telemetry__last">last <b id="lastLatency">—</b></span>
+      </div>
+
+      <section class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions">
+        <!-- rendered by app.js -->
+      </section>
+
+      <div class="suggestions" id="suggestions">
+        <button type="button" data-q="What do you work on day-to-day?">What do you work on day-to-day?</button>
+        <button type="button" data-q="Walk me through the ML system you built on SageMaker.">ML system on SageMaker →</button>
+        <button type="button" data-q="How do you take LLM features from prototype to production?">LLMs: prototype → prod</button>
+        <button type="button" data-q="Can I get your resume?">Send me your resume</button>
+      </div>
+
+      <form class="composer" id="composer" autocomplete="off">
+        <span class="composer__prompt" aria-hidden="true">❯</span>
+        <label class="sr-only" for="input">Message Ronny's AI agent</label>
+        <textarea id="input" rows="1" maxlength="2000" placeholder="Ask about systems, AI, scale…" enterkeyhint="send"></textarea>
+        <button class="composer__send" id="sendBtn" type="submit" aria-label="Send">
+          <svg class="i-send" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+          <svg class="i-stop" viewBox="0 0 24 24" aria-hidden="true"><rect class="fill" x="7" y="7" width="10" height="10" rx="2"/></svg>
+        </button>
+      </form>
+      <p class="composer__hint"><kbd>↵</kbd> send · <kbd>⇧</kbd>+<kbd>↵</kbd> newline · answers are AI-generated from my resume</p>
+    </main>
+  </div>
+
+  <template id="tpl-resume-card">
+    <a class="resume-card" href="/resume" download="Ronny_Kraitman_Resume.pdf">
+      <span class="resume-card__icon" aria-hidden="true">PDF</span>
+      <span class="resume-card__text">
+        <strong>Ronny_Kraitman_Resume.pdf</strong>
+        <small>tool_call · offer_resume_download()</small>
+      </span>
+      <span class="resume-card__cta">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg>
+        Download
+      </span>
+    </a>
+  </template>
+</body>
+</html>
