@@ -79,6 +79,7 @@
     const lines = [
       "Senior AI & Backend Engineer",
       "LLM agents · RAG · production AI",
+      "e-commence agent from zero to hero",
       "distributed data · Kafka · Airflow",
       "ML from whiteboard to 20ms serving",
     ];
@@ -102,9 +103,28 @@
   const STORE_KEY = "rk.chat.v1";
   const USER_AVATAR_KEY = "rk.avatar";
   const BOT_AVATAR = "/media/ronnyk_avatar.jpg";
-  const GREETING =
-    "Hey, I'm **Ronny** — well, my AI twin 🤖. I build backend systems and bring **LLMs and ML to production**.\n\n" +
-    "Ask me about architecture, data pipelines, AI agents, or the time I got an ML model serving in `20ms`. What's your name?";
+  const GREETINGS = [
+    "Hey, I'm **Ronny** — well, my AI twin 🤖. I'm an AI Engineer who builds **agentic systems and LLM services** that actually survive production.\n\n" +
+      "Ask me about multi-agent architectures, `LangGraph`, RAG, or how I keep LLM latency and token costs in check. What's your name?",
+    "Hi there! I'm Ronny's digital twin — yes, an AI agent describing the guy who builds AI agents. Very meta. 🌀\n\n" +
+      "Curious how I designed a **distributed Consumer Agent** with a graph-based router and async worker agents? Ask away — but first, who am I talking to?",
+    "Welcome! 👋 I'm **Ronny** (the AI edition). By day I architect **LLM-powered agents** with `Python`, `FastAPI` and `LangGraph`; by night I… also do that, honestly.\n\n" +
+      "Ask me about agent orchestration, tool registries, or `MCP` integrations. What should I call you?",
+    "Hey! AI-Ronny here 🤖. The real one is probably coding with music on and dancing a little — so I'm covering for him.\n\n" +
+      "I can tell you about **production-grade agentic AI**, semantic caching with `Redis`, or evaluating agents on `AWS Bedrock`. What's your name?",
+    "Hello, human! I'm Ronny's AI twin, trained on his resume and a healthy dose of backend opinions. ⚙️\n\n" +
+      "Want to hear how I took **LLM features** from a developer toy to a profitable product? Or how I scale agents without blocking? Tell me your name first!",
+    "Hi! I'm **Ronny** — or at least the version of me that never needs coffee ☕. I build **AI agents and LLM pipelines** end to end: architecture, tooling, evals, and scale.\n\n" +
+      "Ask me about RAG for product discovery, prompt engineering, or golden-path agent evals. Who do I have the pleasure of chatting with?",
+    "Hey there! You've reached Ronny's **AI agent** — fittingly, built by a guy who builds AI agents for a living. 🧠\n\n" +
+      "Ask me about routing queries to specialized workers, cutting token usage, or leading a team into the **GenAI world**. What's your name?",
+    "Shalom from Tel Aviv! 🌊 I'm Ronny's AI twin. I love backend, quite despise frontend, and spend my days shipping **agentic AI** to production.\n\n" +
+      "Ask me anything about `LangGraph`, distributed agent architectures, or my journey from big data to AI engineering. And you are…?",
+  ];
+  const pickGreeting = (exclude) => {
+    const pool = GREETINGS.filter((g) => g !== exclude);
+    return pool[(Math.random() * pool.length) | 0];
+  };
   const THINKING_STEPS = ["parsing intent", "retrieving resume context", "reasoning over experience", "composing answer"];
 
   const els = {
@@ -132,10 +152,10 @@
   let state = load();
   let controller = null;
 
-  function newState() {
+  function newState(prevGreeting) {
     return {
       session: crypto.getRandomValues(new Uint32Array(1))[0].toString(16).padStart(8, "0"),
-      messages: [{ role: "assistant", content: GREETING, local: true }],
+      messages: [{ role: "assistant", content: pickGreeting(prevGreeting), local: true }],
     };
   }
   function load() {
@@ -360,7 +380,7 @@
   });
   els.reset.addEventListener("click", () => {
     controller?.abort();
-    state = newState();
+    state = newState(state.messages[0]?.content);
     save();
     renderAll();
     els.last.textContent = "—";
@@ -369,7 +389,7 @@
 
   fetch("/api/health")
     .then((r) => r.json())
-    .then((h) => { if (h.model) els.model.textContent = `online · ${h.model}`; })
+    .then(() => { els.model.textContent = "online"; })
     .catch(() => { els.model.textContent = "offline"; });
 
   // Libraries are deferred; re-render once they're available so markdown is pretty.
