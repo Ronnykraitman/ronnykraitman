@@ -270,14 +270,40 @@ svg .fill { fill: currentColor; stroke: none; }
 .resume-card__cta { display: inline-flex; align-items: center; gap: 6px; font: 600 12.5px var(--font-display); color: var(--cyan); }
 
 /* Suggestions */
-.suggestions { display: flex; gap: 8px; flex-wrap: wrap; padding: 4px 18px 12px; }
+/* One row of chips: never wraps; overflows horizontally (swipe / shift+wheel) with a soft fade on the right.
+   flex: none is required: overflow-x makes the row's min-height 0, so the growing message list would squash it away. */
+.suggestions {
+  flex: none;
+  display: flex; gap: 8px; flex-wrap: nowrap; padding: 6px 18px 12px;
+  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+.suggestions::-webkit-scrollbar { display: none; }
 .suggestions[hidden] { display: none; }
 .suggestions button {
   font: 500 12.5px var(--font-body); color: #cfe0fb; cursor: pointer;
   padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line-strong);
   background: rgba(20, 40, 80, 0.35); transition: all 0.2s ease;
+  flex: 0 0 auto; max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .suggestions button:hover { color: #fff; border-color: var(--cyan); background: rgba(56, 225, 255, 0.1); transform: translateY(-1px); }
+.suggestions:not(.is-loading) button { animation: chip-in 0.35s ease backwards; }
+.suggestions button:nth-child(2) { animation-delay: 60ms; }
+.suggestions button:nth-child(3) { animation-delay: 120ms; }
+.suggestions button:nth-child(4) { animation-delay: 180ms; }
+.suggestion-skeleton {
+  flex: 0 0 auto;
+  height: 30px; width: var(--w, 150px); border-radius: 999px; border: 1px solid var(--line-strong);
+  background: linear-gradient(90deg, rgba(20, 40, 80, 0.3) 0%, rgba(56, 225, 255, 0.14) 50%, rgba(20, 40, 80, 0.3) 100%) 0 0 / 200% 100%;
+  animation: skeleton 1.4s linear infinite;
+}
+.suggestion-skeleton:nth-child(2) { --w: 190px; }
+.suggestion-skeleton:nth-child(3) { --w: 130px; }
+@keyframes chip-in { from { opacity: 0; transform: translateY(4px); } }
+@keyframes skeleton { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .suggestions button, .suggestion-skeleton { animation: none; }
+}
 
 /* Composer */
 .composer {
