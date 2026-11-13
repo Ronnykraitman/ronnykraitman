@@ -151,6 +151,13 @@
 
   let state = load();
   let controller = null;
+  let suggestController = null;
+
+  // The hard-coded starters in index.html; after the first exchange the LLM proposes follow-ups.
+  const DEFAULT_SUGGESTIONS = [...els.suggestions.querySelectorAll("button[data-q]")].map((b) => ({
+    q: b.dataset.q,
+    label: b.textContent,
+  }));
 
   function newState(prevGreeting) {
     return {
@@ -228,8 +235,76 @@
   function renderAll() {
     els.list.replaceChildren(...state.messages.map((m) => buildMessage(m).wrap));
     els.session.textContent = state.session;
-    els.suggestions.hidden = state.messages.some((m) => m.role === "user");
+    const started = state.messages.some((m) => m.role === "user");
+    if (!started) renderSuggestions(DEFAULT_SUGGESTIONS);
+    else if (state.suggestions?.length) renderSuggestions(toChips(state.suggestions));
+    else hideSuggestions();
     scrollDown(true);
+  }
+
+  /* ───────────── Suggestions: static starters, then LLM-generated follow-ups ───────────── */
+  // Follow-ups are { label, question }: a short chip label + the full question that gets sent.
+  // Plain strings are accepted too (older sessions saved in localStorage).
+  const toChips = (items) =>
+    items
+      .map((s) => (typeof s === "string" ? { q: s, label: s } : { q: s?.question, label: s?.label || s?.question }))
+      .filter((c) => typeof c.q === "string" && c.q && typeof c.label === "string");
+
+  function renderSuggestions(items) {
+    els.suggestions.classList.remove("is-loading");
+    els.suggestions.setAttribute("aria-busy", "false");
+    els.suggestions.replaceChildren(
+      ...items.map(({ q, label }) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.dataset.q = q;
+        b.textContent = label;
+        if (label !== q) b.title = q;
+        return b;
+      })
+    );
+    els.suggestions.scrollLeft = 0;
+    els.suggestions.hidden = !items.length;
+  }
+  function hideSuggestions() {
+    els.suggestions.hidden = true;
+    els.suggestions.classList.remove("is-loading");
+    els.suggestions.replaceChildren();
+  }
+  function showSuggestionSkeleton() {
+    els.suggestions.classList.add("is-loading");
+    els.suggestions.setAttribute("aria-busy", "true");
+    els.suggestions.replaceChildren(
+      ...[0, 1, 2].map(() => Object.assign(document.createElement("span"), { className: "suggestion-skeleton" }))
+    );
+    els.suggestions.hidden = false;
+  }
+  const chatHistory = () =>
+    state.messages.filter((m) => !m.local && !m.error).map(({ role, content }) => ({ role, content }));
+
+  async function loadSuggestions() {
+    suggestController?.abort();
+    const ctrl = (suggestController = new AbortController());
+    const session = state.session;
+    showSuggestionSkeleton();
+    try {
+      const res = await fetch("/api/suggestions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: chatHistory() }),
+        signal: ctrl.signal,
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const { questions } = await res.json();
+      if (ctrl.signal.aborted || session !== state.session) return;
+      state.suggestions = Array.isArray(questions) ? toChips(questions).slice(0, 3).map(({ q, label }) => ({ question: q, label })) : [];
+      save();
+      renderSuggestions(toChips(state.suggestions));
+    } catch {
+      if (!ctrl.signal.aborted) hideSuggestions();
+    } finally {
+      if (suggestController === ctrl) suggestController = null;
+    }
   }
 
   function setStreaming(on) {
@@ -245,9 +320,11 @@
     if (!text || controller) return;
 
     state.messages.push({ role: "user", content: text });
+    state.suggestions = [];
+    suggestController?.abort();
     save();
     els.list.append(buildMessage({ role: "user", content: text }).wrap);
-    els.suggestions.hidden = true;
+    hideSuggestions();
     els.input.value = "";
     autoGrow();
     scrollDown(true);
@@ -293,9 +370,10 @@
 
     controller = new AbortController();
     setStreaming(true);
+    let aborted = false;
 
     try {
-      const history = state.messages.filter((m) => !m.local && !m.error).map(({ role, content }) => ({ role, content }));
+      const history = chatHistory();
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -332,7 +410,8 @@
         }
       }
     } catch (err) {
-      if (err.name !== "AbortError") {
+      if (err.name === "AbortError") aborted = true;
+      else {
         bot.error = !bot.content;
         bot.content += (bot.content ? "\n\n" : "") + "⚠️ Connection dropped somewhere between my neurons and your browser. Try again?";
       }
@@ -350,6 +429,8 @@
       if (bot.meta) els.last.textContent = `${(bot.meta.latency_ms / 1000).toFixed(2)}s`;
       scrollDown(true);
       els.input.focus({ preventScroll: true });
+      // Only a cleanly finished answer gets fresh, context-aware follow-ups.
+      if (!aborted && !bot.error && bot.meta && state.messages.at(-1) === bot) loadSuggestions();
     }
   }
 
@@ -380,6 +461,7 @@
   });
   els.reset.addEventListener("click", () => {
     controller?.abort();
+    suggestController?.abort();
     state = newState(state.messages[0]?.content);
     save();
     renderAll();
