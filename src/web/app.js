@@ -99,6 +99,34 @@
     setTimeout(step, 3200);
   }
 
+  /* ───────────── Mobile: size the layout to the visual viewport ─────────────
+     iOS Safari doesn't shrink the layout when the on-screen keyboard opens, so the composer would end up
+     under the keyboard. On narrow screens we pin the shell to the visual viewport height/offset instead.
+     Desktop (> 960px) is never touched. */
+  const mobileMQ = matchMedia("(max-width: 960px)");
+  const finePointer = matchMedia("(pointer: fine)");
+  function fitViewport() {
+    const root = document.documentElement;
+    const vv = window.visualViewport;
+    if (!vv || !mobileMQ.matches) {
+      root.style.removeProperty("--app-h");
+      root.style.removeProperty("--app-y");
+      root.classList.remove("kb-open");
+      return;
+    }
+    if (vv.scale > 1.05) return; // user is pinch-zooming: leave the layout alone
+    root.style.setProperty("--app-h", `${Math.round(vv.height)}px`);
+    root.style.setProperty("--app-y", `${Math.round(vv.offsetTop)}px`);
+    root.classList.toggle("kb-open", vv.height < root.clientHeight * 0.75);
+    if (window.scrollY) window.scrollTo(0, 0); // iOS scrolls the page to reveal the input; undo it
+  }
+  if (window.visualViewport) {
+    visualViewport.addEventListener("resize", fitViewport);
+    visualViewport.addEventListener("scroll", fitViewport);
+  }
+  mobileMQ.addEventListener("change", fitViewport);
+  fitViewport();
+
   /* ───────────── Chat ───────────── */
   const STORE_KEY = "rk.chat.v1";
   const USER_AVATAR_KEY = "rk.avatar";
@@ -333,6 +361,8 @@
     hideSuggestions();
     els.input.value = "";
     autoGrow();
+    // On touch devices, dismiss the keyboard on send so the full chat area is visible while reading the reply.
+    if (!finePointer.matches) els.input.blur();
     scrollDown(true);
 
     // Bot placeholder with a live "agent trace"
@@ -434,7 +464,8 @@
       wrap.replaceWith(buildMessage(bot).wrap);
       if (bot.meta) els.last.textContent = `${(bot.meta.latency_ms / 1000).toFixed(2)}s`;
       scrollDown(true);
-      els.input.focus({ preventScroll: true });
+      // On touch screens, focusing would pop the keyboard over the answer the user is about to read.
+      if (finePointer.matches) els.input.focus({ preventScroll: true });
       // Only a cleanly finished answer gets fresh, context-aware follow-ups.
       if (!aborted && !bot.error && bot.meta && state.messages.at(-1) === bot) loadSuggestions();
     }
@@ -451,8 +482,10 @@
 
   els.input.addEventListener("input", () => { autoGrow(); updateSendState(); });
   els.input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      // keyCode 229 = an IME (Japanese/Chinese/Korean…) is confirming a candidate — Safari clears isComposing too early
+      if (e.isComposing || e.keyCode === 229) return;
       els.form.requestSubmit();
     }
   });
@@ -472,7 +505,7 @@
     save();
     renderAll();
     els.last.textContent = "—";
-    els.input.focus();
+    if (finePointer.matches) els.input.focus();
   });
 
   fetch("/api/health")
@@ -485,6 +518,6 @@
     renderAll();
     updateSendState();
     if (!reduceMotion) { startCircuit(); startTyping(); }
-    if (matchMedia("(pointer: fine)").matches) els.input.focus({ preventScroll: true });
+    if (finePointer.matches) els.input.focus({ preventScroll: true });
   });
 })();
