@@ -137,7 +137,7 @@ svg .fill { fill: currentColor; stroke: none; }
 .btn-resume:hover { transform: translateY(-2px); box-shadow: 0 16px 50px -10px rgba(56, 225, 255, 0.75); }
 .btn-resume:hover svg { transform: translateY(2px); }
 .btn-resume:active { transform: translateY(0); }
-.btn-resume:focus-visible, .btn-icon:focus-visible, .chip-btn:focus-visible, .suggestions button:focus-visible, .composer__send:focus-visible {
+.btn-resume:focus-visible, .btn-icon:focus-visible, .chip-btn:focus-visible, .agent__avatar:focus-visible, .suggestions button:focus-visible, .composer__send:focus-visible {
   outline: 2px solid var(--cyan); outline-offset: 3px;
 }
 @property --angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
@@ -174,8 +174,21 @@ svg .fill { fill: currentColor; stroke: none; }
 
 .console__bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px 12px; }
 .agent { display: flex; align-items: center; gap: 12px; }
-.agent__avatar { position: relative; width: 42px; height: 42px; border-radius: 50%; padding: 2px; background: var(--grad); flex: none; }
+.agent__avatar {
+  position: relative; width: 42px; height: 42px; border-radius: 50%; padding: 2px; border: 0;
+  background: var(--grad); flex: none; cursor: pointer; appearance: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.agent__avatar:hover { transform: scale(1.06); box-shadow: 0 0 18px rgba(56, 225, 255, 0.5); }
+.agent__avatar:active { transform: scale(0.98); }
 .agent__avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; border: 2px solid var(--bg-deep); }
+.agent__play {
+  position: absolute; right: -2px; bottom: -2px;
+  display: grid; place-items: center; width: 17px; height: 17px; border-radius: 50%;
+  background: var(--bg-deep); border: 1.5px solid var(--cyan); color: var(--cyan);
+  font-size: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); pointer-events: none;
+}
+.agent__play svg { margin-left: 1px; }
 .agent__name { font: 600 17px var(--font-display); letter-spacing: -0.01em; }
 .agent__status { display: flex; align-items: center; gap: 8px; font: 400 11.5px var(--font-mono); color: var(--ink-dim); }
 .console__tools { display: flex; gap: 8px; }
@@ -334,6 +347,34 @@ svg .fill { fill: currentColor; stroke: none; }
 .composer__hint { margin: 8px 0 12px; text-align: center; font: 400 10.5px var(--font-mono); color: var(--ink-faint); }
 kbd { font: inherit; padding: 0 4px; border-radius: 4px; border: 1px solid var(--line-strong); color: var(--ink-dim); }
 
+/* ───────────── Intro video modal ───────────── */
+.intro-modal {
+  margin: auto; padding: 0; border: 1px solid var(--line-strong); border-radius: var(--radius);
+  width: min(860px, calc(100vw - 48px)); max-width: none;
+  max-height: calc(100dvh - 48px);
+  background: rgba(6, 14, 30, 0.92); color: var(--ink);
+  box-shadow: 0 30px 90px -15px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(56, 225, 255, 0.14);
+  overflow: hidden;
+}
+.intro-modal[open] { display: flex; flex-direction: column; animation: msg-in 0.22s ease; }
+dialog:modal { overscroll-behavior: contain; }
+dialog::backdrop {
+  overflow: hidden; overscroll-behavior: contain;
+  background: rgba(3, 8, 18, 0.78);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.intro-modal__bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px 12px 18px; border-bottom: 1px solid var(--line);
+}
+.intro-modal__title { margin: 0; font: 600 15px var(--font-display); letter-spacing: -0.01em; }
+.intro-modal__close { padding: 0; width: 34px; justify-content: center; }
+.intro-modal__stage { background: #000; display: grid; place-items: center; min-height: 0; flex: 1; }
+.intro-modal video {
+  display: block; width: 100%; height: auto;
+  max-height: calc(100dvh - 116px); aspect-ratio: 16 / 9; background: #000;
+}
+
 /* ───────────── Responsive ─────────────
    Desktop (> 960px, mouse) is defined entirely above. Everything below is scoped to narrow viewports
    or touch input, so it can't change the desktop UI. */
@@ -404,6 +445,14 @@ kbd { font: inherit; padding: 0 4px; border-radius: 4px; border: 1px solid var(-
   .console__bar { padding: 10px 12px 8px; gap: 8px; }
   .agent { gap: 8px; min-width: 0; }
   .agent__avatar { width: 34px; height: 34px; }
+  .agent__play { width: 15px; height: 15px; font-size: 7px; }
+  .intro-modal {
+    --radius: 16px;
+    width: calc(100vw - max(20px, env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px)));
+    max-height: calc(100dvh - max(24px, env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)));
+  }
+  .intro-modal__bar { padding: 10px 10px 10px 14px; }
+  .intro-modal video { max-height: calc(100dvh - 96px); }
   .agent__name { font-size: 16px; }
   .console__tools { gap: 6px; flex: none; }
   .chip-btn { padding: 0 8px; font-size: 12px; }
@@ -440,6 +489,9 @@ kbd { font: inherit; padding: 0 4px; border-radius: 4px; border: 1px solid var(-
   .console__bar { padding-block: 8px 6px; }
   .messages { padding-top: 10px; }
   .composer { margin-bottom: 8px; }
+  .intro-modal { max-height: calc(100dvh - 16px); }
+  .intro-modal__bar { padding: 6px 10px 6px 14px; }
+  .intro-modal video { max-height: calc(100dvh - 76px); }
 }
 /* iOS with the keyboard open (its layout viewport doesn't shrink, so app.js flags it) */
 @media (max-width: 960px) {
@@ -454,6 +506,7 @@ kbd { font: inherit; padding: 0 4px; border-radius: 4px; border: 1px solid var(-
   .composer textarea { font-size: 16px; }
   .composer__keys { display: none; }
   .chip-btn { min-width: 44px; height: 44px; justify-content: center; }
+  .agent__avatar::after { content: ""; position: absolute; inset: -5px; } /* 44px+ hit target on phones without growing the header */
   .btn-icon { width: 44px; height: 44px; }
   .composer__send { width: 44px; height: 44px; }
   .composer__prompt { line-height: 44px; }
@@ -461,7 +514,7 @@ kbd { font: inherit; padding: 0 4px; border-radius: 4px; border: 1px solid var(-
   .resume-card { min-height: 64px; }
 }
 @media (hover: none) {
-  .btn-resume:hover, .btn-icon:hover, .suggestions button:hover, .composer__send:hover, .resume-card:hover { transform: none; }
+  .btn-resume:hover, .btn-icon:hover, .agent__avatar:hover, .suggestions button:hover, .composer__send:hover, .resume-card:hover { transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
