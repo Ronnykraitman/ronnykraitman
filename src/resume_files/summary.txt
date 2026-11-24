@@ -32,75 +32,91 @@ I thrive on developing state-of-the-art technologies to answer our clients' most
 
 3. Then I was a dev team lead for a year (Replacing my boss as she was on maternity leave).
 
-4. Now I am an AI Engineer, fully dedicated to architecting and developing advanced AI agents and LLM production services.
+4. Now I am an AI Engineer, fully dedicated to architecting and developing advanced AI agents, evaluation frameworks, and production LLM services.
 
 
 
 *Professional career milestones*:
 
-1. Leading and developing the team's ML solution, from the drawing board to a high scale production solution.
+1. Leading and developing the team's ML solution, from the drawing board to a high-scale production solution.
 
 2. Leading and mentoring our team's AI and LLM solutions.
 
-3. Design and develop our own LLM features, making it from a developer game to actual profitable feature.
+3. Designing and developing production LLM features, turning early developer experiments into high-impact, revenue-generating product capabilities.
 
 4. Architecting and deploying a highly scalable, distributed Consumer Agent using modern agentic frameworks (LangGraph).
 
+5. Building automated LLM evaluation platforms (`agentix-arena` and LLM-as-a-Judge harnesses) on AWS Bedrock to benchmark latency, cost, and quality across foundation models.
+
+6. Spearheading internal AI service templates and agentic QA triage tools, combining LangGraph and MCP to automate test triage and environment diagnostics.
 
 
-*My AI Journey: Building the Consumer Agent*:
+
+*My AI Journey: Key Projects & Architectures*:
+
+
+
+1. **Building the Consumer Agent (E-Commerce Orchestration)**:
 
 (If asked about the distributed architecture I implemented or how I built the consumer agent, base the answer on this):
 
-I built a comprehensive e-commerce shopping agent capable of autonomous workflows. The goal was to create a production-grade orchestration service that could handle high-scale user requests without blocking. 
+I built a comprehensive e-commerce shopping agent capable of autonomous, multi-turn workflows. The goal was to create a production-grade orchestration service that could handle high-scale user requests with low latency and zero blocking.
+
+- Core Stack: Python 3.12, FastAPI, and Redis for state management and semantic caching.
+
+- Agentic Framework: LangGraph to construct a stateful graph router. The router dynamically inspects user intent, manages context windows, and dispatches sub-tasks to specialized worker agents executing asynchronously.
+
+- Tools & MCP Integration: Built a modular tool registry for e-commerce capabilities. Integrated RAG (Retrieval-Augmented Generation) for hybrid product discovery and implemented MCP (Model Context Protocol) to standardize tool interfaces and external data connections.
+
+- Performance & Token Optimization: Heavily optimized latency and inference cost through structured prompt engineering, system prompt compression, LLM semantic caching in Redis, and token budgeting.
+
+- Multilingual Attribute Extraction: Solved complex i18n attribute extraction for international e-commerce platforms, enabling flexible product matching across agglutinative and morphologically complex languages.
 
 
 
-Here is how I designed the distributed architecture and agentic flow:
+2. **`agentix-arena` & Automated Evaluation Harness (LLM-as-a-Judge)**:
 
-- Core Stack: I built the service using Python 3.12 and FastAPI for the backend infrastructure.
+(If asked about how I evaluate, benchmark, or test LLMs in production):
 
-- Agentic Framework: I utilized LangGraph to create a graph-based router. This router dynamically evaluates user queries and directs them to highly specialized worker agents.
+- Built an asynchronous streaming benchmarking engine (`agentix-arena`) with FastAPI and AWS Bedrock to run side-by-side evaluations of foundation models across throughput (tokens/sec), first-token latency, and response accuracy.
 
-- Tools & Integration: I implemented a modular tool registry for e-commerce workflows. This included utilizing RAG (Retrieval-Augmented Generation) for product discovery and integrating MCP (Model Context Protocol) to seamlessly connect the agent to external data sources.
+- Designed automated quality gates using LLM-as-a-Judge patterns and custom evaluation metrics to quantify hallucination rates, tool-call fidelity, and schema compliance.
 
-- Scale & Performance: To make it truly distributed and scalable, the worker agents execute asynchronously. I also heavily optimized for latency and cost by focusing on prompt engineering, minimizing token usage, and implementing a semantic caching layer using Redis.
-
-- Testing & Evaluation: I ensured production readiness by building CI/CD testing optimizations using pytest fixtures for "golden path" evaluations, testing the agent's decision-making against frameworks like AWS Bedrock.
+- Optimized CI/CD test runs by crafting pytest fixtures for golden-path regression testing, executing evaluation suites against Bedrock endpoints prior to production deployment.
 
 
 
-*Another Project for example*:
+3. **Internal AI Platform & Agentic QA Triage (AgentiX Ecosystem)**:
 
-Our own ML to predict user's behaviour: I developed and designed (with our amazing data science team) the team's ML project.
+(If asked about internal developer tooling, platform engineering, or agentic automation):
 
-It included:
+- Created standard service templates and shared libraries (`agentiX`) for rapid deployment of production-grade FastAPI + LangGraph microservices with built-in telemetry.
 
-- data processing,
+- Developed an agentic Cypress test triaging tool using LangGraph and MCP. When continuous integration runs fail, the agent autonomously inspects test artifacts, runs diagnostic tools via MCP, categorizes flaky failures vs. true bugs, and opens actionable issue reports.
 
-- data cleaning,
 
-- data transformations,
 
-- designing and implementing our model on AWS SageMaker,
+4. **Predictive User Behavior ML Model (SageMaker)**:
 
-- then, my team implemented a fast serving of the results - 20ms.
+(If asked about earlier ML/Data Science collaboration):
+
+- Co-developed a high-scale ML solution with our data science team to predict real-time user behavior.
+
+- Handled data processing, cleaning, and transformations at scale, implemented training pipelines on AWS SageMaker, and built a low-latency serving layer achieving 20ms execution times.
 
 
 
 *My daily tech*:
 
-1. LangGraph & LLM Frameworks
+1. Agentic Frameworks: LangGraph, LangChain, MCP (Model Context Protocol), CrewAI, Ollama (local prototyping)
 
-2. AWS (including Bedrock & SageMaker)
+2. Cloud & Foundation Models: AWS Bedrock, SageMaker, OpenAI APIs, Claude, Llama
 
-3. Airflow
+3. Observability & Evals: Langfuse, OpenTelemetry, Prometheus, Grafana, pytest eval suites
 
-4. Kafka
+4. Infrastructure & Data: FastAPI, Python 3.12, Java, Apache Spark, Kafka, Airflow, Kubernetes, Docker, Helm, `uv`
 
-5. FastAPI
-
-6. DBs such as Postgres, dynamoDB, Redis
+5. Databases & Storage: Redis (semantic caching & state), PostgreSQL, DynamoDB, ScyllaDB
 
 
 

@@ -199,7 +199,7 @@ svg .fill { fill: currentColor; stroke: none; }
 
 /* Messages */
 .messages {
-  flex: 1; min-height: 0; overflow-y: auto; padding: 20px 18px 8px;
+  flex: 1; min-height: 0; overflow-y: auto; padding: 20px 18px 16px;
   display: flex; flex-direction: column; gap: 18px;
   scrollbar-width: thin; scrollbar-color: rgba(120, 170, 255, 0.25) transparent;
   mask-image: linear-gradient(180deg, transparent 0, #000 18px, #000 calc(100% - 10px), transparent);
@@ -270,13 +270,12 @@ svg .fill { fill: currentColor; stroke: none; }
 .resume-card__cta { display: inline-flex; align-items: center; gap: 6px; font: 600 12.5px var(--font-display); color: var(--cyan); }
 
 /* Suggestions */
-/* One row of chips: never wraps; overflows horizontally (swipe / shift+wheel) with a soft fade on the right.
-   flex: none is required: overflow-x makes the row's min-height 0, so the growing message list would squash it away. */
+/* Chips wrap so every starter (incl. "Send me your resume") is visible; on phones they collapse into one
+   swipeable row with a soft fade on the right (see the 480px breakpoint).
+   flex: none is required: otherwise the growing message list would squash the row away. */
 .suggestions {
   flex: none;
-  display: flex; gap: 8px; flex-wrap: nowrap; padding: 6px 18px 12px;
-  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
-  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  display: flex; gap: 8px; flex-wrap: wrap; padding: 6px 18px 12px;
 }
 .suggestions::-webkit-scrollbar { display: none; }
 .suggestions[hidden] { display: none; }
@@ -295,11 +294,13 @@ svg .fill { fill: currentColor; stroke: none; }
   flex: 0 0 auto;
   height: 30px; width: var(--w, 150px); border-radius: 999px; border: 1px solid var(--line-strong);
   background: linear-gradient(90deg, rgba(20, 40, 80, 0.3) 0%, rgba(56, 225, 255, 0.14) 50%, rgba(20, 40, 80, 0.3) 100%) 0 0 / 200% 100%;
-  animation: skeleton 1.4s linear infinite;
+  /* fade in after a short beat so fast follow-ups never flash empty outlines */
+  animation: skeleton-in 0.3s ease 0.35s backwards, skeleton 1.4s linear infinite;
 }
 .suggestion-skeleton:nth-child(2) { --w: 190px; }
 .suggestion-skeleton:nth-child(3) { --w: 130px; }
 @keyframes chip-in { from { opacity: 0; transform: translateY(4px); } }
+@keyframes skeleton-in { from { opacity: 0; } }
 @keyframes skeleton { to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) {
   .suggestions button, .suggestion-skeleton { animation: none; }
@@ -348,6 +349,11 @@ kbd { font: inherit; padding: 0 4px; border-radius: 4px; border: 1px solid var(-
   .console__telemetry span:nth-child(3) { display: none; }
   .composer__hint { display: none; }
   .composer { margin-bottom: 10px; }
+  /* phones: keep chips on one swipeable row so they don't eat the message area */
+  .suggestions {
+    flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
