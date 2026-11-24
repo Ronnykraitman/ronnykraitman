@@ -11,7 +11,7 @@
   --blue: #3b82f6;
   --violet: #8b7bff;
   --lime: #5cf2a5;
-  --glass: rgba(8, 18, 36, 0.58);
+  --glass: rgba(8, 18, 36, 0.42);
   --glass-strong: rgba(6, 14, 30, 0.78);
   --line: rgba(120, 170, 255, 0.14);
   --line-strong: rgba(120, 190, 255, 0.28);
@@ -59,7 +59,7 @@ svg .fill { fill: currentColor; stroke: none; }
   position: absolute; inset: 0;
   background:
     radial-gradient(120% 70% at 0% 100%, rgba(3, 8, 18, 0.88) 0%, rgba(3, 8, 18, 0.45) 40%, transparent 70%),
-    linear-gradient(90deg, transparent 40%, rgba(4, 10, 22, 0.55) 75%, rgba(4, 10, 22, 0.8) 100%),
+    linear-gradient(90deg, transparent 40%, rgba(4, 10, 22, 0.32) 75%, rgba(4, 10, 22, 0.52) 100%),
     linear-gradient(180deg, rgba(4, 10, 22, 0.35), transparent 20%);
 }
 .bg__scan {
@@ -161,7 +161,7 @@ svg .fill { fill: currentColor; stroke: none; }
   display: flex; flex-direction: column;
   border-radius: var(--radius);
   background: var(--glass);
-  backdrop-filter: blur(22px) saturate(140%); -webkit-backdrop-filter: blur(22px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(135%); -webkit-backdrop-filter: blur(12px) saturate(135%);
   box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 .console__border {
@@ -334,26 +334,125 @@ svg .fill { fill: currentColor; stroke: none; }
 .composer__hint { margin: 8px 0 12px; text-align: center; font: 400 10.5px var(--font-mono); color: var(--ink-faint); }
 kbd { font: inherit; padding: 0 4px; border-radius: 4px; border: 1px solid var(--line-strong); color: var(--ink-dim); }
 
-/* ───────────── Responsive ───────────── */
+/* ───────────── Responsive ─────────────
+   Desktop (> 960px, mouse) is defined entirely above. Everything below is scoped to narrow viewports
+   or touch input, so it can't change the desktop UI. */
+
+/* Tablets & phones: single column, slim top bar, full-height chat */
 @media (max-width: 960px) {
-  .shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: 12px; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overscroll-behavior: none; }
+  body { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+  .shell {
+    position: fixed; left: 0; right: 0; top: var(--app-y, 0px);
+    grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 12px;
+    /* --app-h / --app-y are set by app.js from visualViewport so the on-screen keyboard never covers the composer */
+    height: var(--app-h, 100dvh);
+    padding:
+      max(clamp(14px, 2.4vw, 32px), env(safe-area-inset-top, 0px))
+      max(clamp(14px, 2.4vw, 32px), env(safe-area-inset-right, 0px))
+      max(clamp(14px, 2.4vw, 32px), env(safe-area-inset-bottom, 0px))
+      max(clamp(14px, 2.4vw, 32px), env(safe-area-inset-left, 0px));
+  }
+  .hero, .console { width: 100%; min-width: 0; max-width: 760px; justify-self: center; }
   .bg__image { background-position: 30% center; }
-  .bg__shade { background: linear-gradient(180deg, rgba(4, 10, 22, 0.55), rgba(4, 10, 22, 0.85) 45%); }
-  .hero__body, .hero__foot { display: none; }
-  .hero { flex-direction: row; align-items: center; }
+  .bg__shade { background: linear-gradient(180deg, rgba(4, 10, 22, 0.28), rgba(4, 10, 22, 0.52) 55%); }
+  .console {
+    background: rgba(8, 18, 36, 0.36);
+    backdrop-filter: blur(8px) saturate(130%); -webkit-backdrop-filter: blur(8px) saturate(130%);
+  }
+
+  /* Hero collapses into a top bar: brand on the left, LinkedIn / GitHub on the right.
+     The big resume button moves into the chat header (.chip-btn--resume). */
+  .hero { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; }
+  .hero__body { display: flex; margin: 0; padding: 0; max-width: none; }
+  .hero__name, .hero__role, .btn-resume, .hero__foot { display: none; }
+  .hero__actions { gap: 8px; flex-wrap: nowrap; }
+  .btn-icon { width: 40px; height: 40px; border-radius: 12px; font-size: 17px; }
   .chip-btn--resume { display: inline-flex; }
+
   .console__telemetry span:nth-child(2) { display: none; }
+  .messages { overscroll-behavior: contain; }
+  .msg__body { text-shadow: 0 1px 2px rgba(3, 8, 18, 0.7); }
+  .msg__body pre { max-width: 100%; }
+  .msg__body table { display: block; max-width: 100%; overflow-x: auto; }
+  .msg__meta { flex-wrap: wrap; color: var(--ink-dim); text-shadow: 0 1px 2px rgba(3, 8, 18, 0.7); }
 }
+
+/* Phones */
 @media (max-width: 480px) {
-  .shell { padding: 10px; }
-  .console__telemetry span:nth-child(3) { display: none; }
-  .composer__hint { display: none; }
-  .composer { margin-bottom: 10px; }
-  /* phones: keep chips on one swipeable row so they don't eat the message area */
+  .shell {
+    gap: 8px;
+    padding:
+      max(10px, env(safe-area-inset-top, 0px))
+      max(8px, env(safe-area-inset-right, 0px))
+      max(8px, env(safe-area-inset-bottom, 0px))
+      max(8px, env(safe-area-inset-left, 0px));
+  }
+  .hero { padding-inline: 4px; gap: 8px; }
+  .brand { gap: 8px; font-size: 12px; min-width: 0; }
+  .brand__mark { width: 32px; height: 32px; border-radius: 9px; font-size: 13px; flex: none; }
+  .brand__url { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .console { --radius: 18px; }
+  .console__bar { padding: 10px 12px 8px; gap: 8px; }
+  .agent { gap: 8px; min-width: 0; }
+  .agent__avatar { width: 34px; height: 34px; }
+  .agent__name { font-size: 16px; }
+  .console__tools { gap: 6px; flex: none; }
+  .chip-btn { padding: 0 8px; font-size: 12px; }
+  .console__telemetry { display: none; }  /* decorative; per-message latency is still shown under each reply */
+
+  .messages { padding: 14px 12px 12px; gap: 14px; }
+  .msg { gap: 10px; }
+  .msg__avatar { width: 26px; height: 26px; }
+  .msg--user .msg__body { max-width: 88%; }
+  .msg--bot .msg__body { padding-left: 12px; }
+  .msg__meta, .thinking { padding-left: 12px; }
+  .resume-card { max-width: none; padding: 10px 12px; gap: 10px; }
+  .resume-card__icon { width: 34px; height: 40px; }
+
+  /* keep chips on one swipeable row so they don't eat the message area */
   .suggestions {
+    min-width: 0; max-width: 100%;
     flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+    padding: 4px 28px 10px 12px; scroll-padding-inline: 12px;
     mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
   }
+  .composer { margin: 0 8px; padding: 6px 6px 6px 12px; border-radius: 14px; }
+  .composer textarea { max-block-size: 5lh; }
+  .composer__keys { display: none; }
+  .composer__hint { margin: 6px 8px 4px; }
+}
+
+/* Short screens: landscape phones, or Android with the keyboard open. Give everything to the chat. */
+@media (max-width: 960px) and (max-height: 520px) {
+  .shell { grid-template-rows: minmax(0, 1fr); padding-block: max(6px, env(safe-area-inset-top, 0px)) max(6px, env(safe-area-inset-bottom, 0px)); }
+  .hero, .console__telemetry, .composer__hint { display: none; }
+  .console__bar { padding-block: 8px 6px; }
+  .messages { padding-top: 10px; }
+  .composer { margin-bottom: 8px; }
+}
+/* iOS with the keyboard open (its layout viewport doesn't shrink, so app.js flags it) */
+@media (max-width: 960px) {
+  .kb-open .hero, .kb-open .composer__hint { display: none; }
+  .kb-open .shell { grid-template-rows: minmax(0, 1fr); }
+  .kb-open .composer { margin-bottom: 8px; }
+}
+
+/* Touch screens (any width): finger-sized targets, no zoom-on-focus, no sticky hover effects */
+@media (pointer: coarse) {
+  /* ≥ 16px stops iOS Safari from zooming the whole page when the composer is focused */
+  .composer textarea { font-size: 16px; }
+  .composer__keys { display: none; }
+  .chip-btn { min-width: 44px; height: 44px; justify-content: center; }
+  .btn-icon { width: 44px; height: 44px; }
+  .composer__send { width: 44px; height: 44px; }
+  .composer__prompt { line-height: 44px; }
+  .suggestions button { min-height: 44px; padding: 10px 14px; font-size: 13px; }
+  .resume-card { min-height: 64px; }
+}
+@media (hover: none) {
+  .btn-resume:hover, .btn-icon:hover, .suggestions button:hover, .composer__send:hover, .resume-card:hover { transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
