@@ -83,5 +83,5 @@ Play the classic game of Clue. It's you agains the AI
 ## 📫 Connect With Me
 
 - **GitHub**: [Ronnykraitman](https://github.com/Ronnykraitman)
-- **LinkedIn**: (Add link)
-- **Email**: (Add email)
+- **LinkedIn**: [Ronny Kraitman](https://www.linkedin.com/in/ronny-kraitman-03b47aab/)
+- **Email**: [ronnykraitman@gmail.com](mailto:ronnykraitman@gmail.com)
