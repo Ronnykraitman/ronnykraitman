@@ -208,7 +208,10 @@
     if (mdReady || !window.marked || !window.DOMPurify) return mdReady;
     marked.setOptions({ gfm: true, breaks: true });
     DOMPurify.addHook("afterSanitizeAttributes", (node) => {
-      if (node.tagName === "A") { node.setAttribute("target", "_blank"); node.setAttribute("rel", "noopener noreferrer"); }
+      if (node.tagName === "A" && !(node.getAttribute("href") || "").startsWith("mailto:")) {
+        node.setAttribute("target", "_blank");
+        node.setAttribute("rel", "noopener noreferrer");
+      }
     });
     return (mdReady = true);
   }

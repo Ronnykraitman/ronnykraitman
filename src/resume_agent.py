@@ -26,6 +26,23 @@ RESUME_PDF = SRC_DIR / "resume_files" / "ronny_kraitman_resume.pdf"
 RESUME_SUMMARY = SRC_DIR / "resume_files" / "summary.txt"
 RESUME_DOWNLOAD_URL = "/resume"
 
+CONTACT_EMAIL = "ronnykraitman@gmail.com"
+CONTACT_LINKEDIN = "https://www.linkedin.com/in/ronny-kraitman-03b47aab/"
+CONTACT_GITHUB = "https://github.com/Ronnykraitman"
+
+
+def _normalize_resume_text(text: str) -> str:
+    """Replace garbled/outdated contact strings extracted from the PDF with canonical links."""
+    replacements = (
+        ("inlinkedin.com/in/RonnyKraitman", f"LinkedIn: {CONTACT_LINKEDIN}"),
+        ("linkedin.com/in/RonnyKraitman", CONTACT_LINKEDIN),
+        ("</>github.com/Ronnykraitman", f"GitHub: {CONTACT_GITHUB}"),
+        (f"✉ {CONTACT_EMAIL}", f"Email: {CONTACT_EMAIL}"),
+    )
+    for old, new in replacements:
+        text = text.replace(old, new)
+    return text
+
 SUGGESTION_COUNT = 3
 SUGGESTION_MAX_CHARS = 80  # the full question that gets sent when the chip is clicked
 SUGGESTION_LABEL_MAX_CHARS = 28  # the short text shown on the chip, so all chips fit on one line
@@ -88,7 +105,7 @@ class RonnykAgent:
         )
 
     def create_resume_agent_instructions(self) -> None:
-        full_resume = get_full_resume(RESUME_PDF)
+        full_resume = _normalize_resume_text(get_full_resume(RESUME_PDF))
         resume_summary = get_resume_summary(RESUME_SUMMARY)
 
         instructions = (
@@ -103,7 +120,14 @@ class RonnykAgent:
             "**Problem -> Architecture Choice -> Trade-off -> Result**.\n"
             "- Keep answers concise, punchy, and scannable using light markdown (bolding, short bullet lists, `inline code` for tech terms).\n"
             "- Be conversational and engaging. Ask the visitor for their name early on to personalize the chat.\n"
-            f"- Your goal is meaningful networking: gently steer engaged visitors toward reaching out to {self.name} via email or LinkedIn.\n\n"
+            f"- Your goal is meaningful networking: gently steer engaged visitors toward reaching out to {self.name} via email, LinkedIn, or GitHub.\n\n"
+    
+            "### CONTACT DETAILS\n"
+            "- Whenever a visitor asks how to contact you or asks for your contact details, always provide these exact details cleanly formatted in markdown "
+            "(never alter, shorten, or guess any email address or URL):\n"
+            f"  - **Email:** [{CONTACT_EMAIL}](mailto:{CONTACT_EMAIL})\n"
+            f"  - **LinkedIn:** [LinkedIn]({CONTACT_LINKEDIN})\n"
+            f"  - **GitHub:** [GitHub]({CONTACT_GITHUB})\n\n"
     
             "### TOOL USAGE\n"
             "- If the user asks for a resume or CV, seamlessly trigger the `offer_resume_download` tool and let them know the file is ready. "
