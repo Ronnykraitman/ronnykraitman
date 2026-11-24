@@ -508,6 +508,34 @@
     if (finePointer.matches) els.input.focus();
   });
 
+  /* ───────────── Intro video modal (avatar click) ───────────── */
+  const introBtn = $("#introBtn");
+  const introModal = $("#introModal");
+  const introVideo = $("#introVideo");
+  if (introBtn && introModal && introVideo) {
+    introBtn.addEventListener("click", () => {
+      if (!finePointer.matches) els.input.blur(); // drop mobile keyboard so the video gets the full viewport
+      introModal.showModal();
+      introVideo.currentTime = 0;
+      introVideo.play().catch(() => {});
+    });
+    introModal.addEventListener("close", () => {
+      introVideo.pause();
+      introVideo.currentTime = 0;
+      introModal.returnValue = "";
+    });
+    // Fallback for browsers without native <dialog closedby="any"> light-dismiss (e.g. Safari)
+    if (!("closedBy" in HTMLDialogElement.prototype)) {
+      const outside = (e) => {
+        const r = introModal.getBoundingClientRect();
+        return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+      };
+      let pressedOutside = false;
+      introModal.addEventListener("pointerdown", (e) => { pressedOutside = outside(e); });
+      introModal.addEventListener("pointerup", (e) => { if (pressedOutside && outside(e)) introModal.close(); });
+    }
+  }
+
   fetch("/api/health")
     .then((r) => r.json())
     .then(() => { els.model.textContent = "online"; })

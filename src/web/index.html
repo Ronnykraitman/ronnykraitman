@@ -70,7 +70,12 @@
 
       <div class="console__bar">
         <div class="agent">
-          <span class="agent__avatar"><img src="/media/ronnyk_avatar.jpg" alt="" width="40" height="40"></span>
+          <button class="agent__avatar" id="introBtn" type="button" title="Watch intro video" aria-label="Watch Ronny's intro video">
+            <img src="/media/ronnyk_avatar.jpg" alt="" width="40" height="40">
+            <span class="agent__play" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path class="fill" d="M8 5.14v13.72a1 1 0 0 0 1.53.85l11.1-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg>
+            </span>
+          </button>
           <div>
             <div class="agent__name">ronny<span class="accent">.ai</span></div>
             <div class="agent__status"><span class="pulse-dot"></span><span id="modelLabel">agent online</span></div>
@@ -131,5 +136,19 @@
       </span>
     </a>
   </template>
+
+  <dialog class="intro-modal" id="introModal" closedby="any" aria-labelledby="introTitle">
+    <div class="intro-modal__bar">
+      <h1 class="intro-modal__title" id="introTitle">ronny<span class="accent">.ai</span> <span class="dim">· intro</span></h1>
+      <form method="dialog">
+        <button class="chip-btn intro-modal__close" type="submit" autofocus aria-label="Close video">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </form>
+    </div>
+    <div class="intro-modal__stage">
+      <video id="introVideo" src="/media/intro.mp4" controls playsinline preload="none"></video>
+    </div>
+  </dialog>
 </body>
 </html>
