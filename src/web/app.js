@@ -79,7 +79,7 @@
     const lines = [
       "Senior AI & Backend Engineer",
       "LLM agents · RAG · production AI",
-      "e-commence agent from zero to hero",
+      "e-commerce agent from zero to hero",
       "distributed data · Kafka · Airflow",
       "ML from whiteboard to 20ms serving",
     ];
@@ -195,6 +195,12 @@
 
   const nearBottom = () => els.list.scrollHeight - els.list.scrollTop - els.list.clientHeight < 120;
   const scrollDown = (force) => { if (force || nearBottom()) els.list.scrollTop = els.list.scrollHeight; };
+
+  // Keep the log pinned to the bottom when its viewport shrinks (e.g. the suggestion row appears
+  // or wraps after a reply), otherwise the last lines end up hidden behind the follow-up chips.
+  let pinned = true;
+  els.list.addEventListener("scroll", () => { pinned = nearBottom(); }, { passive: true });
+  new ResizeObserver(() => { if (pinned) els.list.scrollTop = els.list.scrollHeight; }).observe(els.list);
 
   function metaHTML(meta) {
     if (!meta) return "";
